@@ -4,10 +4,10 @@ import java.util.*;
 
 /**
 */
-public class ChatServerThread extends Thread {
+public class ClientHandlerThread extends Thread {
     private Socket socket = null; //reference to the client's socket
 
-    public ChatServerThread(Socket socket) {
+    public ClientHandlerThread(Socket socket) {
         super("ChatServer"); //construct the thread
         this.socket = socket;
     }

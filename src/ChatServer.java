@@ -28,7 +28,8 @@ public class ChatServer
             System.out.println("Server is running...");
             while (serverListening)
             {
-	            new ChatServerThread(serverSocket.accept()).start(); //accept() method blocks the thread until connection made
+                Socket clientConnectionSocket = serverSocket.accept(); //accept() method blocks the thread until connection made
+	            new ClientHandlerThread(clientConnectionSocket).start();
 	        }
 	    } catch (IOException e)
         {
