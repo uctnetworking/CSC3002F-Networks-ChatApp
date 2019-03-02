@@ -1,5 +1,6 @@
 import java.net.*;
 import java.io.*;
+import java.util.*;
 
 /**
 Server class to assign a port to the server and continuously listen for new connections and spawn
@@ -7,6 +8,8 @@ a new thread in the case that a client requests a connection with the server
 */
 public class ChatServer
 {
+    private static ArrayList<ClientHandlerThread>() clientHandlers = new ArrayList<ClientHandlerThread>();
+
     /**
     Main method to carry out the server functionality
     @param String[]args - port number specified to host the server. Port numbers from 49152 to 65535 can be used
@@ -16,7 +19,7 @@ public class ChatServer
     {
         if (args.length != 1) //Check that one argument with the port number was passed
         {
-            System.err.println("Use Syntax: java Server <port number>");
+            System.err.println("Use SyntaStringx: java Server <port number>");
             System.exit(1); //not System.exit(0) since an error occured
         }
 
@@ -29,12 +32,18 @@ public class ChatServer
             while (serverListening)
             {
                 Socket clientConnectionSocket = serverSocket.accept(); //accept() method blocks the thread until connection made
-	            new ClientHandlerThread(clientConnectionSocket).start();
+	            ClientHandlerThread clientHandler = new ClientHandlerThread(clientConnectionSocket); //creates a new thread to manage this client-server interaction
+                clientHandlers.start(); // Creates a new client handler thread
+                clientHandlers.add(clientHandler); // Adds this client handler to the list on online users
 	        }
 	    } catch (IOException e)
         {
             System.err.println("Failed to listen on port " + portNumber + "\nPlease try a different port...");
             System.exit(2); //not System.exit(0) since an error occured
         }
+    }
+
+    public getClientHandlers ArrayList<ClientHandlerThread>(){
+        return this.clientHandlers;
     }
 }
