@@ -96,11 +96,7 @@ public class ChatProtocol
             }
             else if(messageType.equalsIgnoreCase("FILE"))
             {
-                // deal with file stuff later
-            }
-            else
-            {
-                return ProtocolResponses.INVALID_MESSAGE_TYPE; // not one of MESSAGE or FILE
+               // deal with file stuff later
             }
         }
         return null;

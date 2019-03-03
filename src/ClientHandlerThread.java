@@ -51,7 +51,7 @@ public class ClientHandlerThread extends Thread
             // if we get here, the name has been accepted and the user should be made ONLINE
             this.clientName = attemptedName;
             this.online = true;
-            out.println("Thanks for your name: " + this.clientName);
+            out.println(ProtocolResponses.NAME_SUCCESS);
             System.out.println(this.clientName + " is now online."); // Write on server terminal just for monitoring purposes
 
             // TO DO: Now we need a while(true) loop to constantly wait for a message that needs to be routed
