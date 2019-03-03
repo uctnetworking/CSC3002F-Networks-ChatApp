@@ -32,7 +32,7 @@ public class ChatServer
             while (serverListening)
             {
                 Socket clientConnectionSocket = serverSocket.accept(); //accept() method blocks the thread until connection made
-	            ClientHandlerThread clientHandler = new ClientHandlerThread(clientConnectionSocket); //creates a new thread to manage this client-server interaction
+                ClientHandlerThread clientHandler = new ClientHandlerThread(clientConnectionSocket); //creates a new thread to manage this client-server interaction
                 clientHandler.start(); // Creates a new client handler thread
                 clientHandlers.add(clientHandler);// Adds this client handler to the list on online users
 	        }

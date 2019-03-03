@@ -21,22 +21,28 @@ public class ChatProtocol
         else if (state == VALIDATE_NAME)
         {
             String attemptedName = theInput;
+
+            if(attemptedName.length() == 0) //name not entered
+            {
+                return ProtocolResponses.NO_NAME_ENTERED;
+            }
+
+            if(attemptedName.length() > 24) //if name too long (24 chars)
+            {
+                return ProtocolResponses.NAME_TOO_LONG;
+            }
+
             for (ClientHandlerThread c : ChatServer.clientHandlers)
             {
                 if(c.getClientName().equalsIgnoreCase(attemptedName)) //compare to current names check if unique
                 {
                     return ProtocolResponses.NAME_NOT_UNIQUE; //if name not unique, don't progress to next state - and ask client to try again
                 }
-                else if(attemptedName.length() > 24) //if name too long (24 chars)
-                {
-                    return ProtocolResponses.NAME_TOO_LONG;
-                }
-                else
-                {
-                    state = ONLINE; //Valid name, change the client state to ONLINE
-                    return ProtocolResponses.NAME_SUCCESS; //if valid name return "NAME_SUCCESS" to tell the ClientHandlerThread to save the name
-                }
             }
+
+            // if we get here, the name is valid.
+            state = ONLINE; //Valid name, change the client state to ONLINE
+            return ProtocolResponses.NAME_SUCCESS; //if valid name return "NAME_SUCCESS" to tell the ClientHandlerThread to save the name
         }
         else if (state == ONLINE)
         {

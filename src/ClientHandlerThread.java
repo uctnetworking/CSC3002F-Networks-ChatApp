@@ -40,7 +40,7 @@ public class ClientHandlerThread extends Thread
             String attemptedName = in.nextLine(); // recieve the inputted name from the client
             String protocolResponse = cp.processInput(attemptedName); // response from the server regarding the validity of the name inputted
             out.println(protocolResponse); // tells the client if the name is valid, and if not then what the error is
-            while (protocolResponse.equals(ProtocolResponses.NAME_NOT_UNIQUE) || protocolResponse.equals(ProtocolResponses.NAME_TOO_LONG))
+            while (protocolResponse.equals(ProtocolResponses.NAME_NOT_UNIQUE) || protocolResponse.equals(ProtocolResponses.NAME_TOO_LONG) || protocolResponse.equals(ProtocolResponses.NO_NAME_ENTERED))
             {
                 attemptedName = in.nextLine(); // get a new name from the client
                 protocolResponse = cp.processInput(attemptedName);
