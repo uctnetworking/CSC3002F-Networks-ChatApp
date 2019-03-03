@@ -11,6 +11,7 @@ public class ClientHandlerThread extends Thread
     private String clientName;
     private InputStream inStream;
     private OutputStream outStream;
+    private boolean online;
 
     public ClientHandlerThread(Socket socket) throws IOException
     {
@@ -18,6 +19,7 @@ public class ClientHandlerThread extends Thread
         this.socket = socket;
         this.inStream = socket.getInputStream();
         this.outStream = socket.getOutputStream();
+        this.online = false;
         this.clientName = "NAME NOT YET ASSIGNED"; // Default value that will be changed as soon as the user enters their name when prompted
     }
 
@@ -48,11 +50,36 @@ public class ClientHandlerThread extends Thread
             }
             // if we get here, the name has been accepted and the user should be made ONLINE
             this.clientName = attemptedName;
+            this.online = true;
             out.println("Thanks for your name: " + this.clientName);
             System.out.println(this.clientName + " is now online."); // Write on server terminal just for monitoring purposes
 
             // TO DO: Now we need a while(true) loop to constantly wait for a message that needs to be routed
 
+            while (online)
+            {
+                String received = in.nextLine();
+                protocolResponse = cp.processInput(received);
+                if(!protocolResponse.equals(ProtocolResponses.MESSAGE_FORMAT_SUCCESS))
+                {
+                    out.println(protocolResponse);
+                }
+                else
+                {
+                    Scanner scLine =  new Scanner(received).useDelimiter("#");
+                    String messageType = scLine.next(); // MESSAGE or FILE
+                    String recipientName = scLine.next(); // the person to send to
+                    String message = scLine.next();// the actual message
+                    for (ClientHandlerThread c : ChatServer.clientHandlers)
+                    {
+                        if(c.getClientName().equalsIgnoreCase(recipientName))
+                        {
+                            PrintWriter outToRecipient = new PrintWriter(c.getSocket().getOutputStream(), true);
+                            outToRecipient.println(message);
+                        }
+                    }
+                }
+            }
             socket.close();
             in.close();
             out.close();
@@ -66,5 +93,10 @@ public class ClientHandlerThread extends Thread
     public String getClientName()
     {
         return clientName;
+    }
+
+    public Socket getSocket()
+    {
+        return socket;
     }
 }

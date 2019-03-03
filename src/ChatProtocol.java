@@ -66,7 +66,7 @@ public class ChatProtocol
             String recipientName = scLine.next(); // the person to send to
             String message = scLine.next();// the actual message
 
-            if(messageType == "MESSAGE")
+            if(messageType.equalsIgnoreCase("MESSAGE"))
             {
                 for (ClientHandlerThread c : ChatServer.clientHandlers)
                 {
@@ -78,7 +78,7 @@ public class ChatProtocol
                 // if we get here, the recipient name is not amongst the online users
                 return ProtocolResponses.INVALID_RECIPIENT_NAME;
             }
-            else if(messageType == "FILE")
+            else if(messageType.equalsIgnoreCase("FILE"))
             {
                 // deal with file stuff later
             }

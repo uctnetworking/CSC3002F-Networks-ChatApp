@@ -35,27 +35,17 @@ public class ChatClient
         System.out.println(in.nextLine()); // This is a thanks from the server for a correct name
 
         // These threads must send and receive messages
-        /**
-        // obtaining input and out streams
-        DataInputStream dis = new DataInputStream(s.getInputStream());
-        DataOutputStream dos = new DataOutputStream(s.getOutputStream());
-
         // sendMessage thread
         Thread sendMessage = new Thread(new Runnable()
         {
             @Override
-            public void run() {
-                while (true) {
-
+            public void run()
+            {
+                while (true)
+                {
                     // read the message to deliver.
                     String msg = scn.nextLine();
-
-                    try {
-                        // write on the output stream
-                        dos.writeUTF(msg); // For us: out.println(msg);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    out.println(msg);
                 }
             }
         });
@@ -64,23 +54,18 @@ public class ChatClient
         Thread readMessage = new Thread(new Runnable()
         {
             @Override
-            public void run() {
-
-                while (true) {
-                    try {
-                        // read the message sent to this client
-                        String msg = dis.readUTF(); // For us: String msg =     in.nextLine();
-                        System.out.println(msg);
-                    } catch (IOException e) {
-
-                        e.printStackTrace();
-                    }
+            public void run()
+            {
+                while (true)
+                {
+                    // read the message sent to this client
+                    String msg =  in.nextLine();
+                    System.out.println(msg);
                 }
             }
         });
 
         sendMessage.start();
         readMessage.start();
-        */
     }
 }
