@@ -19,8 +19,8 @@ default: $(CLASS_FILES)
 runServer:
 	java -cp $(BINDIR) ChatServer 60000
 
-#runClient:
-#	java -cp $(BINDIR) Client
+runClient:
+	java -cp $(BINDIR) ChatClient
 
 docs:
 	javadoc -d $(DOCDIR) $(SRCDIR)/*.java

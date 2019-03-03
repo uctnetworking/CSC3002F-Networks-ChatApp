@@ -18,6 +18,7 @@ public class ClientHandlerThread extends Thread
         this.socket = socket;
         this.inStream = socket.getInputStream();
         this.outStream = socket.getOutputStream();
+        this.clientName = "NAME NOT YET ASSIGNED"; // Default value that will be changed as soon as the user enters their name when prompted
     }
 
     /**
@@ -32,20 +33,29 @@ public class ClientHandlerThread extends Thread
             Scanner in = new Scanner(new InputStreamReader(inStream)); //receive in from client
         )
         {
-            String inputLine, outputLine;
-            ChatProtocol cp = new ChatProtocol();
-            outputLine = cp.processInput(null);
-            out.println(outputLine);
+            ChatProtocol cp = new ChatProtocol(); // controls the protocol that client-server interactions must follow
+            String askForName = cp.processInput(null);
+            out.println(askForName); // print to client screen a request for their name
 
-            while ((inputLine = in.nextLine()) != null)
+            String attemptedName = in.nextLine(); // recieve the inputted name from the client
+            String protocolResponse = cp.processInput(attemptedName); // response from the server regarding the validity of the name inputted
+            out.println(protocolResponse); // tells the client if the name is valid, and if not then what the error is
+            while (protocolResponse.equals(ProtocolResponses.NAME_NOT_UNIQUE) || protocolResponse.equals(ProtocolResponses.NAME_TOO_LONG))
             {
-                outputLine = cp.processInput(inputLine);
-                out.println(outputLine);
-                if (outputLine.equals("Bye"))
-                    break;
+                attemptedName = in.nextLine(); // get a new name from the client
+                protocolResponse = cp.processInput(attemptedName);
+                out.println(protocolResponse);
             }
+            // if we get here, the name has been accepted and the user should be made ONLINE
+            this.clientName = attemptedName;
+            out.println("Thanks for your name: " + this.clientName);
+            System.out.println(this.clientName + " is now online."); // Write on server terminal just for monitoring purposes
+
+            // TO DO: Now we need a while(true) loop to constantly wait for a message that needs to be routed
+
             socket.close();
             in.close();
+            out.close();
         }
         catch (IOException e)
         {
@@ -55,6 +65,6 @@ public class ClientHandlerThread extends Thread
 
     public String getClientName()
     {
-        return this.clientName;
+        return clientName;
     }
 }

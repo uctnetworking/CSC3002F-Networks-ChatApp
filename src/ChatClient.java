@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 public class ChatClient
 {
-    final static int ServerPort = 1234;
+    final static int serverPort = 60000;
 
     public static void main(String args[]) throws UnknownHostException, IOException
     {
@@ -18,8 +18,24 @@ public class ChatClient
         InetAddress ip = InetAddress.getByName("localhost");
 
         // establish the connection
-        Socket s = new Socket(ip, ServerPort);
+        Socket socket = new Socket("192.168.0.109", serverPort);
 
+        PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+        Scanner in = new Scanner(socket.getInputStream());
+
+        System.out.println(in.nextLine()); // This is a request from the server for the client's name
+        out.println(scn.nextLine());
+        String serverResponse = in.nextLine();
+        while(!serverResponse.equals(ProtocolResponses.NAME_SUCCESS))
+        {
+            System.out.println(serverResponse); // Asks the client to enter another name
+            out.println(scn.nextLine());
+            serverResponse = in.nextLine();
+        }
+        System.out.println(in.nextLine()); // This is a thanks from the server for a correct name
+
+        // These threads must send and receive messages
+        /**
         // obtaining input and out streams
         DataInputStream dis = new DataInputStream(s.getInputStream());
         DataOutputStream dos = new DataOutputStream(s.getOutputStream());
@@ -36,7 +52,7 @@ public class ChatClient
 
                     try {
                         // write on the output stream
-                        dos.writeUTF(msg);
+                        dos.writeUTF(msg); // For us: out.println(msg);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -53,7 +69,7 @@ public class ChatClient
                 while (true) {
                     try {
                         // read the message sent to this client
-                        String msg = dis.readUTF();
+                        String msg = dis.readUTF(); // For us: String msg =     in.nextLine();
                         System.out.println(msg);
                     } catch (IOException e) {
 
@@ -65,6 +81,6 @@ public class ChatClient
 
         sendMessage.start();
         readMessage.start();
-
+        */
     }
 }

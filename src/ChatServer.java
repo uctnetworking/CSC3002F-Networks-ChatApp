@@ -42,8 +42,4 @@ public class ChatServer
             System.exit(2); //not System.exit(0) since an error occured
         }
     }
-
-    public getClientHandlers ArrayList<ClientHandlerThread>(){
-        return this.clientHandlers;
-    }
 }
