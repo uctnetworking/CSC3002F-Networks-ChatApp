@@ -1,7 +1,3 @@
-
-// Java implementation for multithreaded chat client
-// Save file as Client.java
-
 import java.io.*;
 import java.net.*;
 import java.util.Scanner;
@@ -61,6 +57,10 @@ public class ChatClient
                     // read the message sent to this client
                     String msg =  in.nextLine();
                     System.out.println(msg);
+                    if(msg.equalsIgnoreCase(ProtocolResponses.REQUEST_LOGOUT))
+                    {
+                        System.exit(0);
+                    }
                 }
             }
         });

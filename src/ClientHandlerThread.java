@@ -60,7 +60,13 @@ public class ClientHandlerThread extends Thread
             {
                 String received = in.nextLine();
                 protocolResponse = cp.processInput(received);
-                if(!protocolResponse.equals(ProtocolResponses.MESSAGE_FORMAT_SUCCESS))
+                if (protocolResponse.equals(ProtocolResponses.REQUEST_LOGOUT))
+                {
+                    this.online = false;
+                    out.println(protocolResponse);
+                    System.out.println(this.clientName + " has gone offline."); // Write on server terminal just for monitoring purpose
+                }
+                else if (!protocolResponse.equals(ProtocolResponses.MESSAGE_FORMAT_SUCCESS))
                 {
                     out.println(protocolResponse);
                 }
@@ -75,7 +81,7 @@ public class ClientHandlerThread extends Thread
                         if(c.getClientName().equalsIgnoreCase(recipientName))
                         {
                             PrintWriter outToRecipient = new PrintWriter(c.getSocket().getOutputStream(), true);
-                            outToRecipient.println(message);
+                            outToRecipient.println(this.clientName + ": " + message);
                         }
                     }
                 }

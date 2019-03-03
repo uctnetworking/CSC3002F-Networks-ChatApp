@@ -10,7 +10,7 @@ public class ChatProtocol
 
     private String state = WAITING;
 
-    public String processInput(String theInput)
+    public String processInput(String input)
     {
         if (state == WAITING) //waiting for a client to connect
         {
@@ -20,7 +20,7 @@ public class ChatProtocol
         }
         else if (state == VALIDATE_NAME)
         {
-            String attemptedName = theInput;
+            String attemptedName = input;
 
             if(attemptedName.length() == 0) //name not entered
             {
@@ -46,12 +46,28 @@ public class ChatProtocol
         }
         else if (state == ONLINE)
         {
+            if(input.equalsIgnoreCase("LOGOUT"))
+            {
+                return ProtocolResponses.REQUEST_LOGOUT;
+            }
+            if(input.equalsIgnoreCase("GET ONLINE USERS"))
+            {
+                String onlineUsers = "Online users: ";
+                for(ClientHandlerThread c : ChatServer.clientHandlers)
+                {
+                    if(!c.getClientName().equalsIgnoreCase("NAME NOT YET ASSIGNED"))
+                    {
+                        onlineUsers += c.getClientName() + "|";
+                    }
+                }
+                return onlineUsers.substring(0,onlineUsers.length()-1);
+            }
             //input will be in format: <MESSAGE or FILE#<name of recipient>#<message or file name>
 
             int countHashes = 0;
-            for(int i = 0; i < theInput.length(); i++) // counts the number of hashes in the input
+            for(int i = 0; i < input.length(); i++) // counts the number of hashes in the input
             {
-                if (theInput.charAt(i) == '#')
+                if (input.charAt(i) == '#')
                 {
                     countHashes++;
                 }
@@ -61,7 +77,7 @@ public class ChatProtocol
                 return ProtocolResponses.INVALID_MESSAGE_FORMAT;
             }
 
-            Scanner scLine =  new Scanner(theInput).useDelimiter("#");
+            Scanner scLine =  new Scanner(input).useDelimiter("#");
             String messageType = scLine.next(); // MESSAGE or FILE
             String recipientName = scLine.next(); // the person to send to
             String message = scLine.next();// the actual message
