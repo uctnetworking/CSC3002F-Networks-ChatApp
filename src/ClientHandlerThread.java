@@ -79,11 +79,7 @@ public class ClientHandlerThread extends Thread
                         castToRecipient.println(cp.processInput(ProtocolRequests.GET_ONLINE_USERS)); //send the online users to the gui for the combo box
                     }
                 }
-                else if (!protocolResponse.equals(ProtocolResponses.MESSAGE_FORMAT_SUCCESS))
-                {
-                    out.println(protocolResponse);
-                }
-                else
+                else if (protocolResponse.equals(ProtocolResponses.MESSAGE_FORMAT_SUCCESS))
                 {
                     Scanner scLine =  new Scanner(received).useDelimiter("#");
                     String messageType = scLine.next(); // MESSAGE or FILE
@@ -94,9 +90,13 @@ public class ClientHandlerThread extends Thread
                         if(c.getClientName().equalsIgnoreCase(recipientName))
                         {
                             PrintWriter outToRecipient = new PrintWriter(c.getSocket().getOutputStream(), true);
-                            outToRecipient.println(this.clientName + ": " + message); //what about files
+                            outToRecipient.println(messageType + "#" + this.clientName + "#" + message); //[Message Type]#[Sender]#[Message]
                         }
                     }
+                }
+                else
+                {
+                    out.println(protocolResponse);
                 }
             }
             socket.close();

@@ -60,13 +60,13 @@ public class ChatGUI extends JFrame implements ActionListener
             {
                 updateOnlineUsers(msg);
             }
-            else if(msg.startsWith("FILE")) //not currently supported
+            else if(msg.startsWith(ProtocolRequests.MESSAGE))
+            {
+                saveAndDisplayMessageFromSender(msg);
+            }
+            else if(msg.startsWith(ProtocolRequests.FILE)) //not currently supported
             {
                 processFileFromServer(msg);
-            }
-            else
-            {
-                saveAndDisplayMessage(msg);
             }
         }
     }
@@ -196,7 +196,8 @@ public class ChatGUI extends JFrame implements ActionListener
                 {
                     String chatHistory = chatHistories.get(i);
                     chatHistories.set(i, chatHistory += "You: " + message + "\n");
-                    txaDisplayChat.setText(chatHistories.get(i));
+                    chatHistory = chatHistories.get(i);
+                    txaDisplayChat.setText(chatHistory.substring(chatHistory.indexOf("#")+1));
                     break;
                 }
             }
@@ -271,19 +272,24 @@ public class ChatGUI extends JFrame implements ActionListener
         }
     }
 
-    private static void saveAndDisplayMessage(String msg)
+    private static void saveAndDisplayMessageFromSender(String msg)
     {
         String cmbOption = cmbOptions.getSelectedItem().toString();
         for(int i=0; i<chatHistories.size(); i++)
         {
-            String recipientName = msg.substring(0, msg.indexOf(":"));
-            if(chatHistories.get(i).startsWith(recipientName));
+            Scanner scLine =  new Scanner(msg).useDelimiter("#");
+            scLine.next(); // MESSAGE or FILE
+            String senderName = scLine.next(); // the person to send to
+            String message = scLine.next();// the actual message
+            scLine.close();
+            if(chatHistories.get(i).startsWith(senderName));
             {
                 String chatHistory = chatHistories.get(i);
-                chatHistories.set(i, chatHistory += msg + "\n");
-                if(recipientName.equalsIgnoreCase(cmbOption))
+                chatHistories.set(i, chatHistory += senderName + ": " + message + "\n");
+                if(senderName.equalsIgnoreCase(cmbOption)) //if currently on the sender's chat view, update the text area
                 {
-                    txaDisplayChat.setText(chatHistories.get(i));
+                    chatHistory = chatHistories.get(i);
+                    txaDisplayChat.setText(chatHistory.substring(chatHistory.indexOf("#")+1));
                 }
                 break;
             }
