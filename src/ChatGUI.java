@@ -18,6 +18,7 @@ public class ChatGUI extends JFrame implements ActionListener
     private JTextField txfMessage;
     private JButton btnSend;
     private JButton btnTransferFile;
+    private JButton btnLogout;
 
     private final static int serverPort = 60000;
     private static PrintWriter out;
@@ -31,7 +32,7 @@ public class ChatGUI extends JFrame implements ActionListener
         gui.setVisible(true);
 
         // establish the connection
-        Socket socket = new Socket("196.42.91.76", serverPort);
+        Socket socket = new Socket("196.42.105.163", serverPort);
 
         out = new PrintWriter(socket.getOutputStream(), true);
         in = new Scanner(socket.getInputStream());
@@ -53,7 +54,6 @@ public class ChatGUI extends JFrame implements ActionListener
         while(scUsers.hasNext())
         {
             String user = scUsers.next();
-            System.out.println(user);
             if(!user.equalsIgnoreCase(name))
             {
                 cmbOptions.addItem(user);
@@ -92,6 +92,11 @@ public class ChatGUI extends JFrame implements ActionListener
                             }
                         }
                         cmbOptions.setEnabled(true);
+                        if (cmbOptions.getItemCount() == 0)
+                        {
+                            JOptionPane.showMessageDialog(null,"No other users online yet");
+                            cmbOptions.setEnabled(false);
+                        }
                     }
                     else
                     {
@@ -122,6 +127,10 @@ public class ChatGUI extends JFrame implements ActionListener
         cmbOptions = new JComboBox<>();
         cmbOptions.addActionListener(this);
         usersBox.add(cmbOptions);
+        btnLogout = new JButton("Logout");
+        btnLogout.setActionCommand("Logout");
+        btnLogout.addActionListener(this);
+        usersBox.add(btnLogout);
         usersBox.add(Box.createHorizontalStrut(MEDIUM_STRUT));
         add(usersBox, BorderLayout.NORTH);
 
@@ -168,6 +177,14 @@ public class ChatGUI extends JFrame implements ActionListener
                 txaDisplayChat.append("You: " + message + "\n");
                 out.println(matchProtocol("MESSAGE", recipient, message));
                 txfMessage.setText("");
+            }
+        }
+        else if(e.getActionCommand().equals("Logout"))
+        {
+            int sure = JOptionPane.showConfirmDialog(null,"Are you sure you want to logout?", "Logout", JOptionPane.YES_NO_OPTION);
+            if(sure == JOptionPane.YES_OPTION)
+            {
+                out.println("LOGOUT");
             }
         }
         else if(e.getActionCommand().equals("Transfer"))
