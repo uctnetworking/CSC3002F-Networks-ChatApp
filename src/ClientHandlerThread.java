@@ -36,6 +36,7 @@ public class ClientHandlerThread extends Thread
         )
         {
             ChatProtocol cp = new ChatProtocol(); // controls the protocol that client-server interactions must follow
+
             String askForName = cp.processInput(null);
             out.println(askForName); // print to client screen a request for their name
 
@@ -54,6 +55,11 @@ public class ClientHandlerThread extends Thread
             out.println(ProtocolResponses.NAME_SUCCESS);
             System.out.println(this.clientName + " is now online."); // Write on server terminal just for monitoring purposes
 
+            for (ClientHandlerThread c : ChatServer.clientHandlers)
+            {
+                PrintWriter castToRecipient = new PrintWriter(c.getSocket().getOutputStream(), true);
+                castToRecipient.println(cp.processInput("GET ONLINE USERS")); //send the online users to the gui for the combo box
+            }
             // TO DO: Now we need a while(true) loop to constantly wait for a message that needs to be routed
 
             while (online)

@@ -14,7 +14,7 @@ public class ChatGUI extends JFrame implements ActionListener
     public static final int LARGE_STRUT = 30;
 
     private static JTextArea txaDisplayChat;
-    private JComboBox <String> cmbOptions;
+    private static JComboBox <String> cmbOptions;
     private JTextField txfMessage;
     private JButton btnSend;
     private JButton btnTransferFile;
@@ -31,7 +31,7 @@ public class ChatGUI extends JFrame implements ActionListener
         gui.setVisible(true);
 
         // establish the connection
-        Socket socket = new Socket("192.168.0.109", serverPort);
+        Socket socket = new Socket("196.42.91.76", serverPort);
 
         out = new PrintWriter(socket.getOutputStream(), true);
         in = new Scanner(socket.getInputStream());
@@ -39,7 +39,7 @@ public class ChatGUI extends JFrame implements ActionListener
         name = JOptionPane.showInputDialog(in.nextLine()); // This is a request from the server for the client's name
         out.println(name);
         String serverResponse = in.nextLine();
-        while(!serverResponse.equals(ProtocolResponses.NAME_SUCCESS))
+        while(!serverResponse.equals("Name successfully registered, you are now online"))
         {
             name = JOptionPane.showInputDialog(serverResponse); // Asks the client to enter another name
             out.println(name);
@@ -47,21 +47,23 @@ public class ChatGUI extends JFrame implements ActionListener
         }
         JOptionPane.showMessageDialog(null, in.nextLine()); // This is a thanks from the server for a correct name
 
-        // These threads must send and receive messages
-        // sendMessage thread
-        // Thread sendMessage = new Thread(new Runnable()
-        // {
-        //     @Override
-        //     public void run()
-        //     {
-        //         while (true)
-        //         {
-        //             // read the message to deliver.
-        //             //String msg = scn.nextLine();
-        //             //out.println(msg);
-        //         }
-        //     }
-        // });
+        gui.setTitle(name + "'s Chats");
+        String users = in.nextLine();
+        Scanner scUsers = new Scanner(users.substring(users.indexOf(":")+2)).useDelimiter("#");
+        while(scUsers.hasNext())
+        {
+            String user = scUsers.next();
+            System.out.println(user);
+            if(!user.equalsIgnoreCase(name))
+            {
+                cmbOptions.addItem(user);
+            }
+        }
+        if (cmbOptions.getItemCount() == 0)
+        {
+            JOptionPane.showMessageDialog(null,"No other users online yet");
+            cmbOptions.setEnabled(false);
+        }
 
         // readMessage thread
         Thread readMessage = new Thread(new Runnable()
@@ -73,16 +75,32 @@ public class ChatGUI extends JFrame implements ActionListener
                 {
                     // read the message sent to this client
                     String msg =  in.nextLine();
-                    txaDisplayChat.append(msg + "\n");
-                    if(msg.equalsIgnoreCase(ProtocolResponses.REQUEST_LOGOUT))
+                    if(msg.equalsIgnoreCase("You have been logged out"))
                     {
                         System.exit(0);
+                    }
+                    else if(msg.startsWith("Online Users:"))
+                    {
+                        cmbOptions.removeAllItems();
+                        Scanner scUsers = new Scanner(msg.substring(msg.indexOf(":")+2)).useDelimiter("#");
+                        while(scUsers.hasNext())
+                        {
+                            String user = scUsers.next();
+                            if(!user.equalsIgnoreCase(name))
+                            {
+                                cmbOptions.addItem(user);
+                            }
+                        }
+                        cmbOptions.setEnabled(true);
+                    }
+                    else
+                    {
+                        txaDisplayChat.append(msg + "\n");
                     }
                 }
             }
         });
 
-        //sendMessage.start();
         readMessage.start();
     }
     /**
@@ -102,8 +120,6 @@ public class ChatGUI extends JFrame implements ActionListener
         usersLabel.setForeground(Color.WHITE);
         usersBox.add(usersLabel);
         cmbOptions = new JComboBox<>();
-        cmbOptions.addItem("SHANE");
-        cmbOptions.addItem("JONO");
         cmbOptions.addActionListener(this);
         usersBox.add(cmbOptions);
         usersBox.add(Box.createHorizontalStrut(MEDIUM_STRUT));
@@ -147,15 +163,17 @@ public class ChatGUI extends JFrame implements ActionListener
         {
             String recipient = cmbOptions.getSelectedItem().toString();
             String message = txfMessage.getText();
-            txaDisplayChat.append(name + ": " + message + "\n");
-            txfMessage.setText("");
-            out.println(matchProtocol("MESSAGE", recipient, message));
+            if(!message.equals(""))
+            {
+                txaDisplayChat.append("You: " + message + "\n");
+                out.println(matchProtocol("MESSAGE", recipient, message));
+                txfMessage.setText("");
+            }
         }
         else if(e.getActionCommand().equals("Transfer"))
         {
             //handle file transfer
         }
-
     }
 
     /**

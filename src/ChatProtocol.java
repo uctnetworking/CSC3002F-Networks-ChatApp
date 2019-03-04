@@ -52,15 +52,15 @@ public class ChatProtocol
             }
             if(input.equalsIgnoreCase("GET ONLINE USERS"))
             {
-                String onlineUsers = "Online users: ";
+                String onlineUsers = "Online Users: ";
                 for(ClientHandlerThread c : ChatServer.clientHandlers)
                 {
                     if(!c.getClientName().equalsIgnoreCase("NAME NOT YET ASSIGNED"))
                     {
-                        onlineUsers += c.getClientName() + "|";
+                        onlineUsers += c.getClientName() + "#";
                     }
                 }
-                return onlineUsers.substring(0,onlineUsers.length()-1);
+                return onlineUsers;
             }
             //input will be in format: <MESSAGE or FILE#<name of recipient>#<message or file name>
 
