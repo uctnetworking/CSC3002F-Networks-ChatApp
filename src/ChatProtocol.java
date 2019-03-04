@@ -55,7 +55,7 @@ public class ChatProtocol
                 String onlineUsers = "Online Users: ";
                 for(ClientHandlerThread c : ChatServer.clientHandlers)
                 {
-                    if(!c.getClientName().equalsIgnoreCase("NAME NOT YET ASSIGNED") && c.isOnline())
+                    if(!c.getClientName().equalsIgnoreCase("NAME NOT YET ASSIGNED"))
                     {
                         onlineUsers += c.getClientName() + "#";
                     }

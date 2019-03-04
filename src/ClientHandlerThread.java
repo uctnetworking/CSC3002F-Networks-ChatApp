@@ -71,15 +71,13 @@ public class ClientHandlerThread extends Thread
                     this.online = false;
                     out.println(protocolResponse);
                     System.out.println(this.clientName + " has gone offline."); // Write on server terminal just for monitoring purpose
+                    ChatServer.clientHandlers.remove(this);
 
                     // broadcast the new online users to everyone else
                     for (ClientHandlerThread c : ChatServer.clientHandlers)
                     {
-                        if(c.isOnline())
-                        {
-                            PrintWriter castToRecipient = new PrintWriter(c.getSocket().getOutputStream(), true);
-                            castToRecipient.println(cp.processInput("GET ONLINE USERS")); //send the online users to the gui for the combo box
-                        }
+                        PrintWriter castToRecipient = new PrintWriter(c.getSocket().getOutputStream(), true);
+                        castToRecipient.println(cp.processInput("GET ONLINE USERS")); //send the online users to the gui for the combo box
                     }
                 }
                 else if (!protocolResponse.equals(ProtocolResponses.MESSAGE_FORMAT_SUCCESS))
