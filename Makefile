@@ -11,7 +11,7 @@ DOCDIR=doc
 $(BINDIR)/%.class:$(SRCDIR)/%.java
 	$(JAVAC) -d $(BINDIR)/ -cp $(BINDIR) $<
 
-CLASSES=ProtocolResponses.class ChatServer.class ClientHandlerThread.class ChatProtocol.class ChatClient.class ChatGUI.class
+CLASSES=ProtocolResponses.class ProtocolRequests.class ChatProtocol.class ClientHandlerThread.class ChatServer.class ChatGUI.class
 CLASS_FILES=$(CLASSES:%.class=$(BINDIR)/%.class)
 
 default: $(CLASS_FILES)
@@ -20,9 +20,6 @@ runServer:
 	java -cp $(BINDIR) ChatServer 60000
 
 runClient:
-	java -cp $(BINDIR) ChatClient
-
-runGUI:
 	java -cp $(BINDIR) ChatGUI
 
 docs:

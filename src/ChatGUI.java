@@ -9,22 +9,22 @@ public class ChatGUI extends JFrame implements ActionListener
 {
     private static final int WIDTH = 650;
     private static final int HEIGHT = 400;
-    private static final int SMALL_STRUT = 20;
     private static final int MEDIUM_STRUT = 25;
     private static final int LARGE_STRUT = 30;
 
     private static JTextArea txaDisplayChat;
     private static JComboBox <String> cmbOptions;
     private static JTextField txfMessage;
-    private JButton btnSend;
-    private JButton btnTransferFile;
-    private JButton btnLogout;
+    private static JButton btnSend;
+    private static JButton btnTransferFile;
+    private static JButton btnLogout;
 
+    private static ArrayList<String> chatHistories = new ArrayList<String>();
     private final static int serverPort = 60000;
     private static PrintWriter out;
     private static Scanner in;
     private static String name;
-    private static ArrayList<String> chatHistories = new ArrayList<String>();
+    private static Socket socket;
 
     /** Main method for running the application.*/
     public static void main(String [] args) throws UnknownHostException, IOException
@@ -33,84 +33,44 @@ public class ChatGUI extends JFrame implements ActionListener
         gui.setVisible(true);
 
         // establish the connection
-        Socket socket = new Socket("localhost", serverPort);
+        socket = new Socket("localhost", serverPort);
 
         out = new PrintWriter(socket.getOutputStream(), true);
         in = new Scanner(socket.getInputStream());
 
-        provideServerWithValidName();
+        provideServerWithValidName(); //note that this reads from and writes to the socket
         gui.setTitle(name + "'s Chats");
 
-        fetchOnlineUsers();
+        String users = in.nextLine();
+        populateOnlineUsers(users);
 
-        // readMessage thread
-        Thread readMessage = new Thread(new Runnable()
+        boolean loggedIn = true;
+        while (loggedIn)
         {
-            @Override
-            public void run()
+            // read the message sent to this client
+            String msg =  in.nextLine(); //comes in format [Name]: [Message]
+            System.out.println("Message from server: " + msg);
+            if(msg.equalsIgnoreCase(ProtocolResponses.NOTIFY_LOGOUT))
             {
-                while (true)
-                {
-                    // read the message sent to this client
-                    String msg =  in.nextLine(); //comes in format [Name]: [Message]
-                    if(msg.equalsIgnoreCase(ProtocolResponses.REQUEST_LOGOUT))
-                    {
-                        System.exit(0);
-                    }
-                    else if(msg.startsWith("Online Users:"))
-                    {
-                        cmbOptions.removeAllItems();
-                        Scanner scUsers = new Scanner(msg.substring(msg.indexOf(":")+2)).useDelimiter("#");
-                        while(scUsers.hasNext())
-                        {
-                            String user = scUsers.next();
-                            if(!user.equalsIgnoreCase(name))
-                            {
-                                cmbOptions.addItem(user);
-                                //check here for if the user's chat is in the array list of chat histories
-                                boolean inList = false;
-                                for (String chat : chatHistories)
-                                {
-                                    if(chat.startsWith(user))
-                                    {
-                                        inList = true;
-                                    }
-                                }
-                                if(!inList)
-                                {
-                                    chatHistories.add(user + "#");
-                                }
-                            }
-
-                        }
-                        for (String s : chatHistories)
-                        {
-                            System.out.println(s);
-                        }
-                        cmbOptions.setEnabled(true);
-                        if (cmbOptions.getItemCount() == 0)
-                        {
-                            JOptionPane.showMessageDialog(null,"No other users online :(");
-                            cmbOptions.setEnabled(false);
-                        }
-                    }
-                    else
-                    {
-                        for(String userHistory : chatHistories)
-                        {
-                            if(userHistory.startsWith(msg.substring(0, msg.indexOf(":")))) //name of the user
-                            {
-                                userHistory += (msg + "\n");
-                            }
-                        }
-                        txaDisplayChat.append(msg + "\n");
-                    }
-                }
+                disableGUI();
+                socket.close();
+                loggedIn = false;
             }
-        });
-
-        readMessage.start();
+            else if(msg.startsWith("Online Users:"))
+            {
+                updateOnlineUsers(msg);
+            }
+            else if(msg.startsWith("FILE")) //not currently supported
+            {
+                processFileFromServer(msg);
+            }
+            else
+            {
+                saveAndDisplayMessage(msg);
+            }
+        }
     }
+
     /**
     * Constructor that sets up the GUI.
     */
@@ -182,11 +142,11 @@ public class ChatGUI extends JFrame implements ActionListener
         }
         else if(e.getActionCommand().equals("Logout"))
         {
-            logout();
+            sendLogoutRequest();
         }
         else if(e.getActionCommand().equals("Transfer"))
         {
-            //handle file transfer
+            sendFile();
         }
     }
 
@@ -204,9 +164,8 @@ public class ChatGUI extends JFrame implements ActionListener
         JOptionPane.showMessageDialog(null, in.nextLine()); // This is a thanks from the server for a correct name
     }
 
-    private static void fetchOnlineUsers()
+    private static void populateOnlineUsers(String users)
     {
-        String users = in.nextLine();
         Scanner scUsers = new Scanner(users.substring(users.indexOf(":")+2)).useDelimiter("#");
         while(scUsers.hasNext())
         {
@@ -231,14 +190,16 @@ public class ChatGUI extends JFrame implements ActionListener
         String message = txfMessage.getText();
         if(!message.equals(""))
         {
-            for(String userHistory : chatHistories)
+            for(int i=0; i<chatHistories.size(); i++)
             {
-                if(userHistory.startsWith(recipient))
+                if(chatHistories.get(i).startsWith(recipient))
                 {
-                    userHistory += "You: " + message + "\n";
+                    String chatHistory = chatHistories.get(i);
+                    chatHistories.set(i, chatHistory += "You: " + message + "\n");
+                    txaDisplayChat.setText(chatHistories.get(i));
+                    break;
                 }
             }
-            txaDisplayChat.append("You: " + message + "\n");
             out.println(matchProtocol("MESSAGE", recipient, message));
             txfMessage.setText("");
         }
@@ -252,7 +213,7 @@ public class ChatGUI extends JFrame implements ActionListener
         return protocol + "#" + recipient + "#" + message;
     }
 
-    private static void displayCorrectChatHistory()
+    private static void displayCorrectChatHistory() //still broken
     {
         // if(cmbOptions.getItemCount() > 0)
         // {
@@ -266,12 +227,86 @@ public class ChatGUI extends JFrame implements ActionListener
         //     }
         // }
     }
-    private static void logout()
+
+    private static void sendLogoutRequest()
     {
         int sure = JOptionPane.showConfirmDialog(null,"Are you sure you want to logout?", "Logout", JOptionPane.YES_NO_OPTION);
         if(sure == JOptionPane.YES_OPTION)
         {
-            out.println("LOGOUT");
+            out.println(ProtocolRequests.REQUEST_LOGOUT);
         }
+    }
+
+    private static void updateOnlineUsers(String msg)
+    {
+        cmbOptions.removeAllItems();
+        Scanner scUsers = new Scanner(msg.substring(msg.indexOf(":")+2)).useDelimiter("#");
+        while(scUsers.hasNext())
+        {
+            String user = scUsers.next();
+            if(!user.equalsIgnoreCase(name))
+            {
+                cmbOptions.addItem(user);
+                //check here for if the user's chat is in the array list of chat histories
+                boolean inList = false;
+                for (String chat : chatHistories)
+                {
+                    if(chat.startsWith(user))
+                    {
+                        inList = true;
+                    }
+                }
+                if(!inList)
+                {
+                    chatHistories.add(user + "#");
+                }
+            }
+        }
+        scUsers.close();
+        cmbOptions.setEnabled(true);
+        if (cmbOptions.getItemCount() == 0)
+        {
+            JOptionPane.showMessageDialog(null,"No other users online :(");
+            cmbOptions.setEnabled(false);
+        }
+    }
+
+    private static void saveAndDisplayMessage(String msg)
+    {
+        String cmbOption = cmbOptions.getSelectedItem().toString();
+        for(int i=0; i<chatHistories.size(); i++)
+        {
+            String recipientName = msg.substring(0, msg.indexOf(":"));
+            if(chatHistories.get(i).startsWith(recipientName));
+            {
+                String chatHistory = chatHistories.get(i);
+                chatHistories.set(i, chatHistory += msg + "\n");
+                if(recipientName.equalsIgnoreCase(cmbOption))
+                {
+                    txaDisplayChat.setText(chatHistories.get(i));
+                }
+                break;
+            }
+        }
+    }
+
+    private static void disableGUI(){
+        txaDisplayChat.append("You have been logged out...");
+        txaDisplayChat.setEnabled(false);
+        cmbOptions.setEnabled(false);
+        txfMessage.setEnabled(false);
+        btnSend.setEnabled(false);
+        btnLogout.setEnabled(false);
+        btnTransferFile.setEnabled(false);
+    }
+
+    private static void sendFile()
+    {
+        //Nic to implement
+    }
+
+    private static void processFileFromServer(String message)
+    {
+        //Nic to implement
     }
 }

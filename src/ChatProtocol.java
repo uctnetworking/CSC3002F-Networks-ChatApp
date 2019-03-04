@@ -46,11 +46,11 @@ public class ChatProtocol
         }
         else if (state == ONLINE)
         {
-            if(input.equalsIgnoreCase("LOGOUT"))
+            if(input.equalsIgnoreCase(ProtocolRequests.REQUEST_LOGOUT))
             {
-                return ProtocolResponses.REQUEST_LOGOUT;
+                return ProtocolResponses.NOTIFY_LOGOUT;
             }
-            if(input.equalsIgnoreCase("GET ONLINE USERS"))
+            if(input.equalsIgnoreCase(ProtocolRequests.GET_ONLINE_USERS))
             {
                 String onlineUsers = "Online Users: ";
                 for(ClientHandlerThread c : ChatServer.clientHandlers)
@@ -64,25 +64,17 @@ public class ChatProtocol
             }
             //input will be in format: <MESSAGE or FILE#<name of recipient>#<message or file name>
 
-            int countHashes = 0;
-            for(int i = 0; i < input.length(); i++) // counts the number of hashes in the input
-            {
-                if (input.charAt(i) == '#')
-                {
-                    countHashes++;
-                }
-            }
-            if(countHashes != 2) // checks there are two hashes in the input so that the message format is correct
+            Scanner scLine =  new Scanner(input).useDelimiter("#");
+            String messageType = scLine.next(); // MESSAGE or FILE
+            String recipientName = scLine.next(); // the person to send to
+            scLine.close();
+
+            if(countHashes(input) != 2)  // checks there are two hashes for a valid message
             {
                 return ProtocolResponses.INVALID_MESSAGE_FORMAT;
             }
 
-            Scanner scLine =  new Scanner(input).useDelimiter("#");
-            String messageType = scLine.next(); // MESSAGE or FILE
-            String recipientName = scLine.next(); // the person to send to
-            String message = scLine.next();// the actual message
-
-            if(messageType.equalsIgnoreCase("MESSAGE"))
+            if(messageType.equalsIgnoreCase(ProtocolRequests.MESSAGE))
             {
                 for (ClientHandlerThread c : ChatServer.clientHandlers)
                 {
@@ -91,14 +83,26 @@ public class ChatProtocol
                         return ProtocolResponses.MESSAGE_FORMAT_SUCCESS; // success if recipient name is amongst online users
                     }
                 }
-                // if we get here, the recipient name is not amongst the online users
-                return ProtocolResponses.INVALID_RECIPIENT_NAME;
+                return ProtocolResponses.INVALID_RECIPIENT_NAME; //if the recipient was not in the online user list
             }
-            else if(messageType.equalsIgnoreCase("FILE"))
+            else if(messageType.equalsIgnoreCase(ProtocolRequests.FILE))
             {
-               // deal with file stuff later
+               // Nic implementation
             }
         }
-        return null;
+        return ProtocolResponses.INVALID_MESSAGE_FORMAT;
+    }
+
+    public int countHashes(String input)
+    {
+        int countHashes = 0;
+        for(int i = 0; i < input.length(); i++) // counts the number of hashes in the input
+        {
+            if (input.charAt(i) == '#')
+            {
+                countHashes++;
+            }
+        }
+        return countHashes;
     }
 }

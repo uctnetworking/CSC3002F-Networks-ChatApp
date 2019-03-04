@@ -9,5 +9,5 @@ public class ProtocolResponses
     public static final String INVALID_MESSAGE_TYPE = "Error sending message: The recipient entered does not exst, please try again or type <get online users> to get a list of online users";
     public static final String INVALID_MESSAGE_FORMAT = "Error processing message: Input must be in format: [MESSAGE or FILE]#[name of recipient]#[message or file name]";
     public static final String NO_NAME_ENTERED = "Error registering name: No name entered. Please try again.";
-    public static final String REQUEST_LOGOUT = "You have been logged out";
+    public static final String NOTIFY_LOGOUT = "You have been logged out";
 }

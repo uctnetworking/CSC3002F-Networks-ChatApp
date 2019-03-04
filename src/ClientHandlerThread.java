@@ -58,15 +58,14 @@ public class ClientHandlerThread extends Thread
             for (ClientHandlerThread c : ChatServer.clientHandlers)
             {
                 PrintWriter castToRecipient = new PrintWriter(c.getSocket().getOutputStream(), true);
-                castToRecipient.println(cp.processInput("GET ONLINE USERS")); //send the online users to the gui for the combo box
+                castToRecipient.println(cp.processInput(ProtocolRequests.GET_ONLINE_USERS)); //send the online users to the gui for the combo box
             }
-            // TO DO: Now we need a while(true) loop to constantly wait for a message that needs to be routed
 
             while (online)
             {
                 String received = in.nextLine();
                 protocolResponse = cp.processInput(received);
-                if (protocolResponse.equals(ProtocolResponses.REQUEST_LOGOUT))
+                if (protocolResponse.equals(ProtocolResponses.NOTIFY_LOGOUT))
                 {
                     this.online = false;
                     out.println(protocolResponse);
@@ -77,7 +76,7 @@ public class ClientHandlerThread extends Thread
                     for (ClientHandlerThread c : ChatServer.clientHandlers)
                     {
                         PrintWriter castToRecipient = new PrintWriter(c.getSocket().getOutputStream(), true);
-                        castToRecipient.println(cp.processInput("GET ONLINE USERS")); //send the online users to the gui for the combo box
+                        castToRecipient.println(cp.processInput(ProtocolRequests.GET_ONLINE_USERS)); //send the online users to the gui for the combo box
                     }
                 }
                 else if (!protocolResponse.equals(ProtocolResponses.MESSAGE_FORMAT_SUCCESS))
@@ -95,7 +94,7 @@ public class ClientHandlerThread extends Thread
                         if(c.getClientName().equalsIgnoreCase(recipientName))
                         {
                             PrintWriter outToRecipient = new PrintWriter(c.getSocket().getOutputStream(), true);
-                            outToRecipient.println(this.clientName + ": " + message);
+                            outToRecipient.println(this.clientName + ": " + message); //what about files
                         }
                     }
                 }
