@@ -22,7 +22,7 @@ public class ChatProtocol
         {
             String attemptedName = input;
 
-            if(attemptedName.length() == 0) //name not entered
+            if(attemptedName.length() == 0 || attemptedName.equals("null")) //name not entered, the string null is returned (strangely) by the JOptionPane if cancel is pressed
             {
                 return ProtocolResponses.NO_NAME_ENTERED;
             }

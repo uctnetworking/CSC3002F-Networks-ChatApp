@@ -119,7 +119,7 @@ public class ChatGUI extends JFrame implements ActionListener
         btnSend.addActionListener(this);
         messageBox.add(btnSend);
         messageBox.add(Box.createHorizontalStrut(MEDIUM_STRUT));
-        btnTransferFile = new JButton("Paperclip"); // Transfer file
+        btnTransferFile = new JButton("Attach"); // Transfer file
         btnTransferFile.setActionCommand("Transfer");
         btnTransferFile.addActionListener(this);
         messageBox.add(btnTransferFile);
