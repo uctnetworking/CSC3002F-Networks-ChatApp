@@ -4,8 +4,7 @@ import java.awt.event.*;
 import java.util.*;
 import java.io.*;
 import java.net.*;
-import java.nio.file.Files; //Import for file transfer
-import java.nio.file.Path;  //Import for file trasfer
+import java.nio.file.*; //Import for file trasfer
 
 public class ChatGUI extends JFrame implements ActionListener
 {
@@ -59,6 +58,7 @@ public class ChatGUI extends JFrame implements ActionListener
                 socket.close();
                 loggedIn = false;
                 gui.setTitle(name + "'s Chats (Offline)");
+                saveChatHistoriesToStorage();
             }
             else if(msg.startsWith("Online Users:"))
             {
@@ -165,7 +165,8 @@ public class ChatGUI extends JFrame implements ActionListener
             out.println(name);
             serverResponse = in.nextLine();
         }
-        //JOptionPane.showMessageDialog(null, in.nextLine()); // This is a thanks from the server for a correct name
+        String thanksMessage = in.nextLine();
+        //JOptionPane.showMessageDialog(null, thanksMessage); // This is a thanks from the server for a correct name
     }
 
     private static void populateOnlineUsers(String users)
@@ -177,10 +178,19 @@ public class ChatGUI extends JFrame implements ActionListener
             if(!user.equalsIgnoreCase(name))
             {
                 cmbOptions.addItem(user);
-                chatHistories.add(user + "#");
+                String restoredChatHistory = restoreChatHistoryFromStorage(user);
+                if(restoredChatHistory.equals("File not found"))
+                {
+                    chatHistories.add(user + "#");
+                }
+                else
+                {
+                    chatHistories.add(user + "#" + restoredChatHistory);
+                }
             }
         }
         scUsers.close();
+        displayCorrectChatHistory();
         if (cmbOptions.getItemCount() == 0)
         {
             JOptionPane.showMessageDialog(null,"No other users online :(");
@@ -261,13 +271,22 @@ public class ChatGUI extends JFrame implements ActionListener
                         inList = true;
                     }
                 }
-                if(!inList)
+                if(!inList) // if not in memory, check if in storage, otherwise doesnt exist at all
                 {
-                    chatHistories.add(user + "#");
+                    String restoredChatHistory = restoreChatHistoryFromStorage(user);
+                    if(restoredChatHistory.equals("File not found"))
+                    {
+                        chatHistories.add(user + "#");
+                    }
+                    else
+                    {
+                        chatHistories.add(user + "#" + restoredChatHistory);
+                    }
                 }
             }
         }
         scUsers.close();
+        displayCorrectChatHistory();
         cmbOptions.setEnabled(true);
         if (cmbOptions.getItemCount() == 0)
         {
@@ -353,6 +372,57 @@ public class ChatGUI extends JFrame implements ActionListener
 
     private static void processFileFromServer(String message)
     {
+    }
+
+    private static void saveChatHistoriesToStorage()
+    {
+        for(String chatHistory : chatHistories)
+        {
+            String user = chatHistory.substring(0,chatHistory.indexOf("#")); //retrieve name from [name]#[history]
+            String history = chatHistory.substring(chatHistory.indexOf("#") + 1);
+            if(!history.equals("")) // if the chat with the person isn't a blank chat
+            {
+                PrintWriter printer = null;
+                try
+                {
+                    if (Files.notExists(FileSystems.getDefault().getPath(name + "'s chats")))
+                    {
+                        Files.createDirectory(FileSystems.getDefault().getPath(name + "'s chats"));
+                    }
+                    printer = new PrintWriter(new FileOutputStream(name + "'s chats/" + user.toUpperCase() + ".txt", false));
+                    printer.print(history); //retrieve history from [name]#[history]
+                    printer.close();
+                }
+                catch(FileNotFoundException fe)
+                {
+                   System.out.println("Error -  file could not be opened");
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private static String restoreChatHistoryFromStorage(String otherUser)
+    {
+        try
+        {
+            String fileName = name + "'s chats/" + otherUser.toUpperCase() + ".txt";
+            Scanner scFile = new Scanner(new File(fileName));
+            String contents = "";
+            while(scFile.hasNextLine())
+            {
+                contents += scFile.nextLine() + "\n";
+            }
+            scFile.close();
+            return contents;
+        }
+        catch(FileNotFoundException fe)
+        {
+            return "File not found";
+        }
     }
 
 
