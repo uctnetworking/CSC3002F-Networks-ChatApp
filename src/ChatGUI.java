@@ -4,7 +4,11 @@ import java.awt.event.*;
 import java.util.*;
 import java.io.*;
 import java.net.*;
-import java.nio.file.*; //Import for file trasfer
+import java.nio.file.*; //Import for file transfer
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 public class ChatGUI extends JFrame implements ActionListener
 {
@@ -210,8 +214,14 @@ public class ChatGUI extends JFrame implements ActionListener
             {
                 if(chatHistories.get(i).startsWith(recipient))
                 {
+                    // get time the message was sent
+                    Calendar calendar = Calendar.getInstance();
+                    Date time = calendar.getTime();
+                    DateFormat dateFormat = new SimpleDateFormat("HH:mm");
+                    String formattedTime = dateFormat.format(time);
+
                     String chatHistory = chatHistories.get(i);
-                    chatHistories.set(i, chatHistory += "You: " + message + "\n");
+                    chatHistories.set(i, chatHistory += formattedTime + " | You: " + message + "\n");
                     chatHistory = chatHistories.get(i);
                     txaDisplayChat.setText(chatHistory.substring(chatHistory.indexOf("#")+1));
                     break;
@@ -310,8 +320,14 @@ public class ChatGUI extends JFrame implements ActionListener
             scLine.close();
             if(chatHistories.get(i).startsWith(senderName))
             {
+                // get time the message was sent
+                Calendar calendar = Calendar.getInstance();
+                Date time = calendar.getTime();
+                DateFormat dateFormat = new SimpleDateFormat("HH:mm");
+                String formattedTime = dateFormat.format(time);
+
                 String chatHistory = chatHistories.get(i);
-                chatHistories.set(i, chatHistory += senderName + ": " + message + "\n");
+                chatHistories.set(i, chatHistory += formattedTime + " | " + senderName + ": " + message + "\n");
                 if(senderName.equalsIgnoreCase(cmbOption)) //if currently on the sender's chat view, update the text area
                 {
                     chatHistory = chatHistories.get(i);
@@ -394,6 +410,19 @@ public class ChatGUI extends JFrame implements ActionListener
                     }
                     printer = new PrintWriter(new FileOutputStream(name + "'s chats/" + user.toUpperCase() + ".txt", false));
                     printer.print(history); //retrieve history from [name]#[history]
+
+                    //prints a line of -------- to indicate end of chat session
+                    history = history.substring(0,history.length()-1); // remove the final \n
+                    String lastLine = history.substring(history.lastIndexOf("\n")+1);
+                    if(lastLine.charAt(0) != '-') // to avoid a repeated line of ------
+                    {
+                        int lengthOfLastLine = lastLine.length();
+                        for(int i = 0; i < lengthOfLastLine; i++)
+                        {
+                            printer.print("-");
+                        }
+                        printer.print("\n");
+                    }
                     printer.close();
                 }
                 catch(FileNotFoundException fe)
