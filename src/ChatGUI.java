@@ -55,6 +55,7 @@ public class ChatGUI extends JFrame implements ActionListener
                 disableGUI();
                 socket.close();
                 loggedIn = false;
+                gui.setTitle(name + "'s Chats (Offline)");
             }
             else if(msg.startsWith("Online Users:"))
             {
@@ -214,19 +215,19 @@ public class ChatGUI extends JFrame implements ActionListener
         return protocol + "#" + recipient + "#" + message;
     }
 
-    private static void displayCorrectChatHistory() //still broken
+    private static void displayCorrectChatHistory()
     {
-        // if(cmbOptions.getItemCount() > 0)
-        // {
-        //     String selectedChat = cmbOptions.getSelectedItem().toString();
-        //     for(String userHistory : chatHistories)
-        //     {
-        //         if(userHistory.startsWith(selectedChat))
-        //         {
-        //             txaDisplayChat.setText(userHistory.substring(userHistory.indexOf('#')+1));
-        //         }
-        //     }
-        // }
+        if(cmbOptions.getItemCount() > 0)
+        {
+            String selectedChat = cmbOptions.getSelectedItem().toString();
+            for(String userHistory : chatHistories)
+            {
+                if(userHistory.startsWith(selectedChat))
+                {
+                    txaDisplayChat.setText(userHistory.substring(userHistory.indexOf('#')+1));
+                }
+            }
+        }
     }
 
     private static void sendLogoutRequest()
@@ -267,6 +268,7 @@ public class ChatGUI extends JFrame implements ActionListener
         cmbOptions.setEnabled(true);
         if (cmbOptions.getItemCount() == 0)
         {
+            txaDisplayChat.setText(""); //empty the text area from previous chat if no more users online
             JOptionPane.showMessageDialog(null,"No other users online :(");
             cmbOptions.setEnabled(false);
         }
@@ -282,7 +284,7 @@ public class ChatGUI extends JFrame implements ActionListener
             String senderName = scLine.next(); // the person to send to
             String message = scLine.next();// the actual message
             scLine.close();
-            if(chatHistories.get(i).startsWith(senderName));
+            if(chatHistories.get(i).startsWith(senderName))
             {
                 String chatHistory = chatHistories.get(i);
                 chatHistories.set(i, chatHistory += senderName + ": " + message + "\n");
@@ -297,9 +299,9 @@ public class ChatGUI extends JFrame implements ActionListener
     }
 
     private static void disableGUI(){
-        txaDisplayChat.append("You have been logged out...");
-        txaDisplayChat.setEnabled(false);
-        cmbOptions.setEnabled(false);
+        JOptionPane.showMessageDialog(null,"You have been logged out...");
+        txaDisplayChat.setEnabled(true); // allow them to still select and view old chats
+        cmbOptions.setEnabled(true); // allow them to still select and view old chats
         txfMessage.setEnabled(false);
         btnSend.setEnabled(false);
         btnLogout.setEnabled(false);
