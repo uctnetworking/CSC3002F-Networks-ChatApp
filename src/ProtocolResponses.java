@@ -10,4 +10,5 @@ public class ProtocolResponses
     public static final String INVALID_MESSAGE_FORMAT = "Error processing message: Input must be in format: [MESSAGE or FILE]#[name of recipient]#[message or file name]";
     public static final String NO_NAME_ENTERED = "Error registering name: No name entered. Please try again.";
     public static final String NOTIFY_LOGOUT = "You have been logged out";
+    public static final String ILLEGAL_CHARACTERS = "Your name contains illegal characters, Please enter Alphanumeric characters only";
 }

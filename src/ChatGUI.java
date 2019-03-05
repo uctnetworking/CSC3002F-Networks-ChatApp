@@ -4,6 +4,8 @@ import java.awt.event.*;
 import java.util.*;
 import java.io.*;
 import java.net.*;
+import java.nio.file.Files; //Import for file transfer
+import java.nio.file.Path;  //Import for file trasfer
 
 public class ChatGUI extends JFrame implements ActionListener
 {
@@ -53,6 +55,7 @@ public class ChatGUI extends JFrame implements ActionListener
             if(msg.equalsIgnoreCase(ProtocolResponses.NOTIFY_LOGOUT))
             {
                 disableGUI();
+                gui.setDefaultCloseOperation(EXIT_ON_CLOSE);
                 socket.close();
                 loggedIn = false;
                 gui.setTitle(name + "'s Chats (Offline)");
@@ -79,7 +82,7 @@ public class ChatGUI extends JFrame implements ActionListener
     {
         super("Chat App");
         setSize(WIDTH,HEIGHT);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         setLayout(new BorderLayout());
         getContentPane().setBackground(Color.BLACK);
 
@@ -162,7 +165,7 @@ public class ChatGUI extends JFrame implements ActionListener
             out.println(name);
             serverResponse = in.nextLine();
         }
-        JOptionPane.showMessageDialog(null, in.nextLine()); // This is a thanks from the server for a correct name
+        //JOptionPane.showMessageDialog(null, in.nextLine()); // This is a thanks from the server for a correct name
     }
 
     private static void populateOnlineUsers(String users)
@@ -202,7 +205,7 @@ public class ChatGUI extends JFrame implements ActionListener
                     break;
                 }
             }
-            out.println(matchProtocol("MESSAGE", recipient, message));
+            out.println(matchProtocol(ProtocolRequests.MESSAGE, recipient, message));
             txfMessage.setText("");
         }
     }
@@ -246,7 +249,7 @@ public class ChatGUI extends JFrame implements ActionListener
         while(scUsers.hasNext())
         {
             String user = scUsers.next();
-            if(!user.equalsIgnoreCase(name))
+            if(!user.equalsIgnoreCase(name)) // ensures the user cannot chat with themself
             {
                 cmbOptions.addItem(user);
                 //check here for if the user's chat is in the array list of chat histories
@@ -298,8 +301,9 @@ public class ChatGUI extends JFrame implements ActionListener
         }
     }
 
-    private static void disableGUI(){
-        JOptionPane.showMessageDialog(null,"You have been logged out...");
+    private static void disableGUI()
+    {
+        //JOptionPane.showMessageDialog(null,"You have been logged out...");
         txaDisplayChat.setEnabled(true); // allow them to still select and view old chats
         cmbOptions.setEnabled(true); // allow them to still select and view old chats
         txfMessage.setEnabled(false);
@@ -310,11 +314,46 @@ public class ChatGUI extends JFrame implements ActionListener
 
     private static void sendFile()
     {
+        JFileChooser filePicker = new JFileChooser();     //JFiler chooser for the user to graphically pick the file they want to send.
+        Path fl = null;                                   //Path used to get the contents of the file and convert to bytes
+        byte[] fileContent = null;                         //bytes array of file to send
+        int response = filePicker.showOpenDialog(null);
+        filePicker.setApproveButtonText("Select File");
+        if(response == JFileChooser.APPROVE_OPTION)
+        {
+            try
+            {
+                //dir = filePicker.getSelectedFile().toString();
+                 fl = filePicker.getSelectedFile().toPath();
+                //Path p = filePicker.getS
+
+                fileContent = Files.readAllBytes(fl);
+                String recipientName = cmbOptions.getSelectedItem().toString();
+                String protocol = ProtocolRequests.FILE;
+                String sendPrefix = protocol + recipientName;
+                for (int i =sendPrefix.length()-1; i<31; i++)
+                  {
+                      sendPrefix = sendPrefix+"*";
+                  }
+
+                socket.getOutputStream().write(fileContent);
+                JOptionPane.showMessageDialog(null, "File found and converted" );
+            }
+            catch (IOException ex) {
+
+                JOptionPane.showMessageDialog(null, "File cannot be transfered", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+        else
+        {
+            JOptionPane.showMessageDialog(null, "File selection cancelled" );
+        }
         //Nic to implement
     }
 
     private static void processFileFromServer(String message)
     {
-        //Nic to implement
     }
+
+
 }

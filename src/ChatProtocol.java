@@ -7,6 +7,7 @@ public class ChatProtocol
     private static final String WAITING = "Waiting";
     private static final String VALIDATE_NAME = "ValidateName";
     private static final String ONLINE = "Online";
+    private static final String VALIDCHARACTERS = "abcdefghijklmnopqrtsuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
     private String state = WAITING;
 
@@ -30,6 +31,11 @@ public class ChatProtocol
             if(attemptedName.length() > 24) //if name too long (24 chars)
             {
                 return ProtocolResponses.NAME_TOO_LONG;
+            }
+
+            if(validateChar(attemptedName) == false)
+            {
+                return ProtocolResponses.ILLEGAL_CHARACTERS;
             }
 
             for (ClientHandlerThread c : ChatServer.clientHandlers)
@@ -104,5 +110,21 @@ public class ChatProtocol
             }
         }
         return countHashes;
+    }
+
+    public boolean validateChar(String s)
+    {
+      boolean flag = true;
+      int i =0;
+      while(flag ==true && i<s.length())
+      {
+        if(!(VALIDCHARACTERS.contains(s.charAt(i)+"")))
+        {
+          flag = false;
+        }
+         i++;
+      }
+      return flag;
+      //return true;
     }
 }
