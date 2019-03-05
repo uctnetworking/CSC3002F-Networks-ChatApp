@@ -8,6 +8,9 @@ import java.nio.file.*; //Import for file trasfer
 
 public class ChatGUI extends JFrame implements ActionListener
 {
+    private final static String ipAddress = "192.168.0.109";
+    private final static int serverPort = 60000;
+
     private static final int WIDTH = 650;
     private static final int HEIGHT = 400;
     private static final int MEDIUM_STRUT = 25;
@@ -21,7 +24,6 @@ public class ChatGUI extends JFrame implements ActionListener
     private static JButton btnLogout;
 
     private static ArrayList<String> chatHistories = new ArrayList<String>();
-    private final static int serverPort = 60000;
     private static PrintWriter out;
     private static Scanner in;
     private static String name;
@@ -34,7 +36,7 @@ public class ChatGUI extends JFrame implements ActionListener
         gui.setVisible(true);
 
         // establish the connection
-        socket = new Socket("localhost", serverPort);
+        socket = new Socket(ipAddress, serverPort);
 
         out = new PrintWriter(socket.getOutputStream(), true);
         in = new Scanner(socket.getInputStream());
@@ -315,6 +317,7 @@ public class ChatGUI extends JFrame implements ActionListener
                     chatHistory = chatHistories.get(i);
                     txaDisplayChat.setText(chatHistory.substring(chatHistory.indexOf("#")+1));
                 }
+                JOptionPane.showMessageDialog(null, name + ", you have a new message from " + senderName);
                 break;
             }
         }
