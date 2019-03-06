@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 
 public class ChatClient extends JFrame implements ActionListener
 {
-    private final static String ipAddress = "localhost";
+    private final static String ipAddress = "192.168.0.116";
     private final static int serverPort = 60000;
 
     private static final int WIDTH = 650;
@@ -462,31 +462,38 @@ public class ChatClient extends JFrame implements ActionListener
     //    System.out.println(type);
     //    System.out.println(client);
         //byte[] fileBytes = Arrays.copyOfRange(message, 72, message.length);
-        JFileChooser filePicker = new JFileChooser();
-        int response = filePicker.showSaveDialog(null);
-         //filePicker.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        filePicker.setApproveButtonText("Select Save Destination");
+        Runnable r = new Runnable() {
 
-        if(response == JFileChooser.APPROVE_OPTION)
-        {
-            String dir = filePicker.getSelectedFile().toString();
-             File file = new File((dir));
-           try
-           {
-             OutputStream os = new FileOutputStream(file); // Initialize a pointer in file using OutputStream
-             os.write(message);  // Starts writing the bytes in it
-             os.close();   // Close the file
-        }
+            @Override
+            public void run() {
+                JFileChooser filePicker = new JFileChooser();
+                int response = filePicker.showSaveDialog(null);
+                 //filePicker.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                filePicker.setApproveButtonText("Select Save Destination");
 
-        catch (Exception e)
-        {
-            JOptionPane.showMessageDialog(null, "File cannot be transfered", "Error", JOptionPane.ERROR_MESSAGE);
-        }
-        }
-        else
-        {
-            JOptionPane.showMessageDialog(null, "File transfer cancelled" );
-        }
+                if(response == JFileChooser.APPROVE_OPTION)
+                {
+                    String dir = filePicker.getSelectedFile().toString();
+                     File file = new File((dir));
+                   try
+                   {
+                     OutputStream os = new FileOutputStream(file); // Initialize a pointer in file using OutputStream
+                     os.write(message);  // Starts writing the bytes in it
+                     os.close();   // Close the file
+                }
+
+                catch (Exception e)
+                {
+                    JOptionPane.showMessageDialog(null, "File cannot be transfered", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+                }
+                else
+                {
+                    JOptionPane.showMessageDialog(null, "File transfer cancelled" );
+                }
+            }
+        };
+        SwingUtilities.invokeLater(r);
     }
 
     private static void saveChatHistoriesToStorage()
