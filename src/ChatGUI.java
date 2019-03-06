@@ -9,10 +9,11 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.nio.charset.StandardCharsets;
 
 public class ChatGUI extends JFrame implements ActionListener
 {
-    private final static String ipAddress = "192.168.0.109";
+    private final static String ipAddress = "localhost";
     private final static int serverPort = 60000;
 
     private static final int WIDTH = 650;
@@ -76,7 +77,7 @@ public class ChatGUI extends JFrame implements ActionListener
             }
             else if(msg.startsWith(ProtocolRequests.FILE)) //not currently supported
             {
-                processFileFromServer(msg);
+                //processFileFromServer(msg);
             }
         }
     }
@@ -373,8 +374,12 @@ public class ChatGUI extends JFrame implements ActionListener
                   {
                       sendPrefix = sendPrefix+"*";
                   }
-
-                socket.getOutputStream().write(fileContent);
+                byte[] pre = sendPrefix.getBytes();
+                ByteArrayOutputStream dataOut = new ByteArrayOutputStream( );
+                dataOut.write(pre);
+                dataOut.write(fileContent);
+                byte combined[] = dataOut.toByteArray( );
+                socket.getOutputStream().write(combined);
                 JOptionPane.showMessageDialog(null, "File found and converted" );
             }
             catch (IOException ex) {
@@ -389,8 +394,40 @@ public class ChatGUI extends JFrame implements ActionListener
         //Nic to implement
     }
 
-    private static void processFileFromServer(String message)
+    private static void processFileFromServer(byte[] message)
     {
+      String type= new String(Arrays.copyOfRange(message, 0, 1), StandardCharsets.US_ASCII);
+      String client = new String(Arrays.copyOfRange(message, 1, 32), StandardCharsets.US_ASCII);
+
+        System.out.println(type);
+        System.out.println(client);
+        byte[] fileBytes = Arrays.copyOfRange(message, 32, message.length);
+
+        JFileChooser filePicker = new JFileChooser();
+        int response = filePicker.showSaveDialog(null);
+         //filePicker.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        filePicker.setApproveButtonText("Select Save Destination");
+
+        if(response == JFileChooser.APPROVE_OPTION)
+        {
+            String dir = filePicker.getSelectedFile().toString();
+             File file = new File((dir));
+           try
+           {
+             OutputStream os = new FileOutputStream(file); // Initialize a pointer in file using OutputStream
+             os.write(fileBytes);  // Starts writing the bytes in it
+             os.close();   // Close the file
+        }
+
+        catch (Exception e)
+        {
+            JOptionPane.showMessageDialog(null, "File cannot be transfered", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        }
+        else
+        {
+            JOptionPane.showMessageDialog(null, "File transfer canceled" );
+        }
     }
 
     private static void saveChatHistoriesToStorage()
