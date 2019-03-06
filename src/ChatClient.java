@@ -374,6 +374,19 @@ public class ChatClient extends JFrame implements ActionListener
                   {
                       sendPrefix = sendPrefix+"*";
                   }
+                  //JOptionPane.showMessageDialog(null, sendPrefix );
+                 sendPrefix = sendPrefix +fl.getFileName().toString();
+                 if(fl.getFileName().toString().length()>32){JOptionPane.showMessageDialog(null, "Error: File name to long. Name should be less than 32 Characters long" ); return;}
+                 //JOptionPane.showMessageDialog(null, sendPrefix );
+                for (int i =sendPrefix.length()-1; i<63; i++)
+                  {
+                      sendPrefix = sendPrefix+"*";
+                  }
+                long size = Files.size(fl);
+                if(size>20000000){JOptionPane.showMessageDialog(null, "Error: File size to big. Please select a file less than 20MB" ); return;}
+                String ssize = String.format("%08d", size);  // 0009
+                sendPrefix = sendPrefix+ssize;
+                JOptionPane.showMessageDialog(null, sendPrefix );
                 byte[] pre = sendPrefix.getBytes();
                 ByteArrayOutputStream dataOut = new ByteArrayOutputStream( );
                 dataOut.write(pre);
@@ -400,7 +413,7 @@ public class ChatClient extends JFrame implements ActionListener
 
         System.out.println(type);
         System.out.println(client);
-        byte[] fileBytes = Arrays.copyOfRange(message, 32, message.length);
+        byte[] fileBytes = Arrays.copyOfRange(message, 72, message.length);
 
         JFileChooser filePicker = new JFileChooser();
         int response = filePicker.showSaveDialog(null);
