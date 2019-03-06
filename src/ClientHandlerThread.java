@@ -147,7 +147,7 @@ public class ClientHandlerThread extends Thread
         byte[] fileCapacity = new byte[8];
         inStream.read(fileCapacity);
         String fileBytes = new String(fileCapacity);
-
+        System.out.println(fileBytes);
         int fileSize = Integer.parseInt(fileBytes);
         this.fileWaitingToBeSent = new byte[fileSize];
         inStream.read(this.fileWaitingToBeSent);
