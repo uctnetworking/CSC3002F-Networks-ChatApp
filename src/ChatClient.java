@@ -56,9 +56,11 @@ public class ChatClient extends JFrame implements ActionListener
         while (loggedIn)
         {
             // read the message sent to this client
-            String msg =  in.nextLine(); //comes in format [Name]: [Message]
+            byte[] prefix = new byte[1];
+            socket.getInputStream().read(prefix);
+            String msg = new String(prefix);
             System.out.println("Message from server: " + msg);
-            if(msg.equalsIgnoreCase(ProtocolResponses.NOTIFY_LOGOUT))
+            if(msg.startsWith(ProtocolResponses.NOTIFY_LOGOUT))
             {
                 disableGUI();
                 gui.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -67,21 +69,36 @@ public class ChatClient extends JFrame implements ActionListener
                 gui.setTitle(name + "'s Chats (Offline)");
                 saveChatHistoriesToStorage();
             }
-            else if(msg.startsWith("Online Users:"))
+            else if(msg.startsWith("O"))
             {
+                msg += in.nextLine();
                 updateOnlineUsers(msg);
             }
             else if(msg.startsWith(ProtocolRequests.REQUEST_TO_SEND_FILE))
             {
+                msg += in.nextLine();
                 processFileRequest(msg);
             }
             else if(msg.startsWith(ProtocolRequests.MESSAGE))
             {
+                msg += in.nextLine();
                 saveAndDisplayMessageFromSender(msg);
             }
-            else if(msg.startsWith(ProtocolRequests.FILE)) //not currently supported
+            else if(msg.startsWith(ProtocolRequests.FILE))
             {
-                //processFileFromServer(msg);
+                byte[] fileName = new byte[32];
+                socket.getInputStream().read(fileName);
+                String fileNameWithStars = new String(fileName);
+                System.out.println(fileNameWithStars);
+
+                byte[] fileSizeBytes = new byte[8];
+                socket.getInputStream().read(fileSizeBytes);
+                String fileSize = new String(fileSizeBytes);
+                System.out.println(fileSize);
+                byte[] file = new byte[Integer.parseInt(fileSize)];
+                socket.getInputStream().read(fileSizeBytes);
+                //processFileFromServer(fileNameWithStars, file);
+                printByteArray(file);
             }
         }
     }
@@ -162,6 +179,16 @@ public class ChatClient extends JFrame implements ActionListener
         else if(e.getActionCommand().equals("Transfer"))
         {
             sendFile();
+        }
+    }
+
+    public static void printByteArray(byte[] file)
+    {
+        for(int i=0; i<file.length; i++){
+            byte[] oneByte = new byte[1];
+            oneByte[0] = file[i];
+            String character = new String(oneByte);
+            System.out.println(character);
         }
     }
 
@@ -430,15 +457,15 @@ public class ChatClient extends JFrame implements ActionListener
 
     }
 
-    private static void processFileFromServer(byte[] message)
+    private static void processFileFromServer(String fileName, byte[] old)
     {
-      String type= new String(Arrays.copyOfRange(message, 0, 1), StandardCharsets.US_ASCII);
-      String client = new String(Arrays.copyOfRange(message, 1, 32), StandardCharsets.US_ASCII);
+      //String type= new String(Arrays.copyOfRange(message, 0, 1), StandardCharsets.US_ASCII);
+     // String client = new String(Arrays.copyOfRange(message, 1, 32), StandardCharsets.US_ASCII);
 
-        System.out.println(type);
-        System.out.println(client);
+    //    System.out.println(type);
+    //    System.out.println(client);
         //byte[] fileBytes = Arrays.copyOfRange(message, 72, message.length);
-
+        byte[]message = {33};
         JFileChooser filePicker = new JFileChooser();
         int response = filePicker.showSaveDialog(null);
          //filePicker.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -451,7 +478,7 @@ public class ChatClient extends JFrame implements ActionListener
            try
            {
              OutputStream os = new FileOutputStream(file); // Initialize a pointer in file using OutputStream
-            // os.write(fileBytes);  // Starts writing the bytes in it
+             os.write(message);  // Starts writing the bytes in it
              os.close();   // Close the file
         }
 

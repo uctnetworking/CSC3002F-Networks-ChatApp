@@ -193,15 +193,27 @@ public class ClientHandlerThread extends Thread
         return finalName;
     }
 
-    private void sendFileBackToClient()
+    private void sendFileBackToClient() throws IOException
     {
+        //[F][FileName][File Size][File]
+        String filePrefix = "";
         String received = in.nextLine();
         String sender = received.substring(1); //remove the #
+        byte[] file;
+
         for (ClientHandlerThread c : ChatServer.clientHandlers)
         {
             if(c.getClientName().equalsIgnoreCase(sender))
             {
-                //socket.getOutputStream().write(sender.getFileWaitingToBeSent());
+                file = c.getFileWaitingToBeSent();
+                int fileSize = file.length;
+                String fileName = "****************************.txt";
+                assert(fileName.length() == 32);
+                String sSize = String.format("%08d", fileSize);
+                filePrefix = "F" + fileName + sSize;
+                byte[] bytesFilePrefix = filePrefix.getBytes();
+                socket.getOutputStream().write(bytesFilePrefix);
+                socket.getOutputStream().write(file);
             }
         }
     }
