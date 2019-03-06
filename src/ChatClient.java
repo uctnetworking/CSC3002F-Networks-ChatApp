@@ -86,7 +86,6 @@ public class ChatClient extends JFrame implements ActionListener
             }
             else if(msg.startsWith(ProtocolRequests.FILE))
             {
-                System.out.println("Receiving...");
                 byte[] fileName = new byte[32];
                 socket.getInputStream().read(fileName);
                 String fileNameWithStars = new String(fileName);
@@ -94,7 +93,7 @@ public class ChatClient extends JFrame implements ActionListener
                 socket.getInputStream().read(fileSizeBytes);
                 String fileSize = new String(fileSizeBytes);
                 byte[] file = new byte[Integer.parseInt(fileSize)];
-                socket.getInputStream().read(fileSizeBytes);
+                socket.getInputStream().read(file);
                 processFileFromServer(fileNameWithStars, file);
             }
         }

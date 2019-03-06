@@ -160,7 +160,6 @@ public class ClientHandlerThread extends Thread
             if(c.getClientName().equalsIgnoreCase(recipientNameWithoutStars))
             {
                 PrintWriter outToRecipient = new PrintWriter(c.getSocket().getOutputStream(), true);
-                System.out.println("Sending...: " + this.clientName + "#" + fileNameWithoutStars + "#" + fileSize);
                 outToRecipient.println(ProtocolRequests.REQUEST_TO_SEND_FILE + "#" + this.clientName + "#" + fileNameWithoutStars + "#" + fileSize);
             }
         }
@@ -208,7 +207,6 @@ public class ClientHandlerThread extends Thread
                 file = c.getFileWaitingToBeSent();
                 int fileSize = file.length;
                 String fileName = "****************************.txt";
-                assert(fileName.length() == 32);
                 String sSize = String.format("%08d", fileSize);
                 filePrefix = "F" + fileName + sSize;
                 byte[] bytesFilePrefix = filePrefix.getBytes();
