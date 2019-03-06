@@ -1,7 +1,10 @@
+/**
+N.B. DO NOT ADD ANY PROTOCOL REQUESTS BEGINNING WITH M OR F
+*/
 public class ProtocolRequests
 {
-    public static final String REQUEST_LOGOUT = "Logout";
-    public static final String GET_ONLINE_USERS = "GET ONLINE USERS";
+    public static final String REQUEST_LOGOUT = "L";
+    public static final String GET_ONLINE_USERS = "G";
     public static final String MESSAGE = "M";
     public static final String FILE = "F";
 }

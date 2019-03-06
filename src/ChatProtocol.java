@@ -80,7 +80,7 @@ public class ChatProtocol
                 return ProtocolResponses.INVALID_MESSAGE_FORMAT;
             }
 
-            if(messageType.equalsIgnoreCase(ProtocolRequests.MESSAGE))
+            if(messageType.equalsIgnoreCase(ProtocolRequests.MESSAGE) || messageType.equalsIgnoreCase(ProtocolRequests.FILE))
             {
                 for (ClientHandlerThread c : ChatServer.clientHandlers)
                 {
@@ -91,15 +91,11 @@ public class ChatProtocol
                 }
                 return ProtocolResponses.INVALID_RECIPIENT_NAME; //if the recipient was not in the online user list
             }
-            else if(messageType.equalsIgnoreCase(ProtocolRequests.FILE))
-            {
-               // Nic implementation
-            }
         }
         return ProtocolResponses.INVALID_MESSAGE_FORMAT;
     }
 
-    public int countHashes(String input)
+    private int countHashes(String input)
     {
         int countHashes = 0;
         for(int i = 0; i < input.length(); i++) // counts the number of hashes in the input
@@ -112,7 +108,7 @@ public class ChatProtocol
         return countHashes;
     }
 
-    public boolean validateChar(String s)
+    private boolean validateChar(String s)
     {
       boolean flag = true;
       int i =0;
@@ -125,6 +121,5 @@ public class ChatProtocol
          i++;
       }
       return flag;
-      //return true;
     }
 }

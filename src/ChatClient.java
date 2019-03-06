@@ -11,7 +11,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.nio.charset.StandardCharsets;
 
-public class ChatGUI extends JFrame implements ActionListener
+public class ChatClient extends JFrame implements ActionListener
 {
     private final static String ipAddress = "localhost";
     private final static int serverPort = 60000;
@@ -37,7 +37,7 @@ public class ChatGUI extends JFrame implements ActionListener
     /** Main method for running the application.*/
     public static void main(String [] args) throws UnknownHostException, IOException
     {
-        ChatGUI gui = new ChatGUI();
+        ChatClient gui = new ChatClient();
         gui.setVisible(true);
 
         // establish the connection
@@ -85,7 +85,7 @@ public class ChatGUI extends JFrame implements ActionListener
     /**
     * Constructor that sets up the GUI.
     */
-    public ChatGUI()
+    public ChatClient()
     {
         super("Chat App");
         setSize(WIDTH,HEIGHT);
@@ -391,7 +391,6 @@ public class ChatGUI extends JFrame implements ActionListener
         {
             JOptionPane.showMessageDialog(null, "File selection cancelled" );
         }
-        //Nic to implement
     }
 
     private static void processFileFromServer(byte[] message)
@@ -426,7 +425,7 @@ public class ChatGUI extends JFrame implements ActionListener
         }
         else
         {
-            JOptionPane.showMessageDialog(null, "File transfer canceled" );
+            JOptionPane.showMessageDialog(null, "File transfer cancelled" );
         }
     }
 
@@ -493,6 +492,4 @@ public class ChatGUI extends JFrame implements ActionListener
             return "File not found";
         }
     }
-
-
 }

@@ -41,14 +41,15 @@ public class ClientHandlerThread extends Thread
             processClientName();
             System.out.println(this.clientName + " is now online."); // Write on server terminal just for monitoring purposes
 
-            broadcastNewUserInformation();
+            broadcastOnlineUserList();
 
             while (online)
             {
-                //convert first byte to String
-                //if first byte is message do the below
-                //if first byte is file, use other logic
-                String messageType = "M";
+                byte[] b = new byte[1];
+                inStream.read(b);
+                String messageType = new String(b);
+                System.out.println("Message type: " + messageType);
+
                 if(messageType.equals(ProtocolRequests.MESSAGE))
                 {
                     processMessageFromClient();
@@ -57,7 +58,10 @@ public class ClientHandlerThread extends Thread
                 {
                     processFileFromClient();
                 }
-
+                if(messageType.equals(ProtocolRequests.REQUEST_LOGOUT))
+                {
+                    processLogoutFromClient(ProtocolRequests.REQUEST_LOGOUT);
+                }
             }
 
             socket.close();
@@ -91,9 +95,8 @@ public class ClientHandlerThread extends Thread
         out.println(ProtocolResponses.NAME_SUCCESS);
     }
 
-    public void broadcastNewUserInformation() throws IOException
+    private void broadcastOnlineUserList() throws IOException
     {
-
         for (ClientHandlerThread c : ChatServer.clientHandlers)
         {
             PrintWriter castToRecipient = new PrintWriter(c.getSocket().getOutputStream(), true);
@@ -101,25 +104,11 @@ public class ClientHandlerThread extends Thread
         }
     }
 
-    public void processMessageFromClient() throws IOException
+    private void processMessageFromClient() throws IOException
     {
-        String received = in.nextLine();
+        String received = "M" + in.nextLine();
         String protocolResponse = cp.processInput(received);
-        if (protocolResponse.equals(ProtocolResponses.NOTIFY_LOGOUT))
-        {
-            this.online = false;
-            out.println(protocolResponse);
-            System.out.println(this.clientName + " has gone offline."); // Write on server terminal just for monitoring purpose
-            ChatServer.clientHandlers.remove(this);
-
-            // broadcast the new online users to everyone else
-            for (ClientHandlerThread c : ChatServer.clientHandlers)
-            {
-                PrintWriter castToRecipient = new PrintWriter(c.getSocket().getOutputStream(), true);
-                castToRecipient.println(cp.processInput(ProtocolRequests.GET_ONLINE_USERS)); //send the online users to the gui for the combo box
-            }
-        }
-        else if (protocolResponse.equals(ProtocolResponses.MESSAGE_FORMAT_SUCCESS))
+        if (protocolResponse.equals(ProtocolResponses.MESSAGE_FORMAT_SUCCESS))
         {
             Scanner scLine =  new Scanner(received).useDelimiter("#");
             String messageType = scLine.next(); // MESSAGE or FILE
@@ -140,9 +129,64 @@ public class ClientHandlerThread extends Thread
         }
     }
 
-    public void processFileFromClient()
+    private void processFileFromClient() throws IOException
     {
 
+        //[F][Recipient][File Name][File Data Number of Bytes][File Data]
+        //[1][31][32][3][n]
+        byte[] recipient = new byte[31];
+        inStream.read(recipient);
+        String recipientNameWithStars = new String(recipient);
+
+        // byte[] fileName = new byte[32];
+        // inStream.read(fileName);
+        // String fileNameWithStars = new String(fileName);
+        //
+        // byte[] fileCapacity = new byte[3];
+        // inStream.read(Capacity);
+
+        int fileSize = 10;
+        byte[] file = new byte[fileSize];
+        in.nextLine();
+
+        String recipientNameWithoutStars = removeStarsFromName(recipientNameWithStars);
+        //String fileNameWithoutStars = removeStarsFromName(fileNameWithStars);
+
+        for (ClientHandlerThread c : ChatServer.clientHandlers)
+            {
+                if(c.getClientName().equalsIgnoreCase(recipientNameWithoutStars))
+                {
+                    PrintWriter outToRecipient = new PrintWriter(c.getSocket().getOutputStream(), true);
+                    outToRecipient.println("M" + "#" + this.clientName + "#" + "Do you want to receive a file of size " + fileSize);
+                }
+            }
+    }
+
+    private void processLogoutFromClient(String received) throws IOException
+    {
+        String protocolResponse = cp.processInput(received);
+        if (protocolResponse.equals(ProtocolResponses.NOTIFY_LOGOUT))
+        {
+            in.nextLine();
+            this.online = false;
+            out.println(protocolResponse);
+            System.out.println(this.clientName + " has gone offline."); // Write on server terminal just for monitoring purpose
+            ChatServer.clientHandlers.remove(this);
+            broadcastOnlineUserList();
+        }
+    }
+
+    private String removeStarsFromName(String name)
+    {
+        String finalName = "";
+        for(int i=0; i<name.length(); i++)
+        {
+            if(name.charAt(i)!=('*'))
+            {
+                finalName += name.charAt(i);
+            }
+        }
+        return finalName;
     }
 
     public String getClientName()
@@ -159,4 +203,6 @@ public class ClientHandlerThread extends Thread
     {
         return online;
     }
+
+
 }
