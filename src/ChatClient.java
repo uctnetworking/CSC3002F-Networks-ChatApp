@@ -93,6 +93,14 @@ public class ChatClient extends JFrame implements ActionListener
                 socket.getInputStream().read(fileSizeBytes);
                 String fileSize = new String(fileSizeBytes);
                 byte[] file = new byte[Integer.parseInt(fileSize)];
+                try
+                {
+                    Thread.sleep(4000);
+                }
+                catch(InterruptedException e)
+                {
+
+                }
                 socket.getInputStream().read(file);
                 printByteArray(file);
                 processFileFromServer(fileNameWithStars, file);

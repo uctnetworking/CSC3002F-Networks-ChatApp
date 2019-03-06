@@ -55,6 +55,14 @@ public class ClientHandlerThread extends Thread
                 }
                 if(messageType.equals(ProtocolRequests.FILE))
                 {
+                    try
+                    {
+                        Thread.sleep(4000);
+                    }
+                    catch(InterruptedException e)
+                    {
+                        
+                    }
                     processFileFromClient();
                 }
                 if(messageType.equals(ProtocolRequests.REQUEST_LOGOUT))
