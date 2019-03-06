@@ -1,7 +1,6 @@
 import java.net.*;
 import java.io.*;
 import java.util.*;
-
 /**
 Client Handler Class to manage the interactions between an individual client and the server on a seperate thread on the server,
 */
@@ -15,6 +14,7 @@ public class ClientHandlerThread extends Thread
     private PrintWriter out;
     private Scanner in;
     private ChatProtocol cp;
+    private byte[] fileWaitingToBeSent;
 
     public ClientHandlerThread(Socket socket) throws IOException
     {
@@ -48,7 +48,6 @@ public class ClientHandlerThread extends Thread
                 byte[] b = new byte[1];
                 inStream.read(b);
                 String messageType = new String(b);
-                System.out.println("Message type: " + messageType);
 
                 if(messageType.equals(ProtocolRequests.MESSAGE))
                 {
@@ -61,6 +60,10 @@ public class ClientHandlerThread extends Thread
                 if(messageType.equals(ProtocolRequests.REQUEST_LOGOUT))
                 {
                     processLogoutFromClient(ProtocolRequests.REQUEST_LOGOUT);
+                }
+                if(messageType.equals(ProtocolResponses.ACCEPT_FILE))
+                {
+                    sendFileBackToClient();
                 }
             }
 
@@ -132,34 +135,35 @@ public class ClientHandlerThread extends Thread
     private void processFileFromClient() throws IOException
     {
 
-        //[F][Recipient][File Name][File Data Number of Bytes][File Data]
-        //[1][31][32][3][n]
+        //[F][Recipient][File Name][File Byte Size][File Data]
+        //[1][31][32][8][n]
         byte[] recipient = new byte[31];
         inStream.read(recipient);
         String recipientNameWithStars = new String(recipient);
 
-        // byte[] fileName = new byte[32];
-        // inStream.read(fileName);
-        // String fileNameWithStars = new String(fileName);
-        //
-        // byte[] fileCapacity = new byte[3];
-        // inStream.read(Capacity);
+        byte[] fileName = new byte[32];
+        inStream.read(fileName);
+        String fileNameWithStars = new String(fileName);
 
-        int fileSize = 10;
-        byte[] file = new byte[fileSize];
+        byte[] fileCapacity = new byte[8];
+        inStream.read(fileCapacity);
+        String fileBytes = new String(fileCapacity);
+
+        int fileSize = Integer.parseInt(fileBytes);
+        this.fileWaitingToBeSent = new byte[fileSize];
         in.nextLine();
 
         String recipientNameWithoutStars = removeStarsFromName(recipientNameWithStars);
-        //String fileNameWithoutStars = removeStarsFromName(fileNameWithStars);
+        String fileNameWithoutStars = removeStarsFromName(fileNameWithStars);
 
         for (ClientHandlerThread c : ChatServer.clientHandlers)
+        {
+            if(c.getClientName().equalsIgnoreCase(recipientNameWithoutStars))
             {
-                if(c.getClientName().equalsIgnoreCase(recipientNameWithoutStars))
-                {
-                    PrintWriter outToRecipient = new PrintWriter(c.getSocket().getOutputStream(), true);
-                    outToRecipient.println("M" + "#" + this.clientName + "#" + "Do you want to receive a file of size " + fileSize);
-                }
+                PrintWriter outToRecipient = new PrintWriter(c.getSocket().getOutputStream(), true);
+                outToRecipient.println(ProtocolRequests.REQUEST_TO_SEND_FILE + "#" + this.clientName + "#" + fileNameWithoutStars + "#" + fileSize);
             }
+        }
     }
 
     private void processLogoutFromClient(String received) throws IOException
@@ -189,6 +193,19 @@ public class ClientHandlerThread extends Thread
         return finalName;
     }
 
+    private void sendFileBackToClient()
+    {
+        String received = in.nextLine();
+        String sender = received.substring(1); //remove the #
+        for (ClientHandlerThread c : ChatServer.clientHandlers)
+        {
+            if(c.getClientName().equalsIgnoreCase(sender))
+            {
+                //socket.getOutputStream().write(sender.getFileWaitingToBeSent());
+            }
+        }
+    }
+
     public String getClientName()
     {
         return clientName;
@@ -202,6 +219,11 @@ public class ClientHandlerThread extends Thread
     public boolean isOnline()
     {
         return online;
+    }
+
+    public byte[] getFileWaitingToBeSent()
+    {
+        return this.fileWaitingToBeSent;
     }
 
 

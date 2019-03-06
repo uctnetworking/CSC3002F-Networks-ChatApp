@@ -71,6 +71,10 @@ public class ChatClient extends JFrame implements ActionListener
             {
                 updateOnlineUsers(msg);
             }
+            else if(msg.startsWith(ProtocolRequests.REQUEST_TO_SEND_FILE))
+            {
+                processFileRequest(msg);
+            }
             else if(msg.startsWith(ProtocolRequests.MESSAGE))
             {
                 saveAndDisplayMessageFromSender(msg);
@@ -386,7 +390,6 @@ public class ChatClient extends JFrame implements ActionListener
                 if(size>20000000){JOptionPane.showMessageDialog(null, "Error: File size to big. Please select a file less than 20MB" ); return;}
                 String ssize = String.format("%08d", size);  // 0009
                 sendPrefix = sendPrefix+ssize;
-                JOptionPane.showMessageDialog(null, sendPrefix );
                 byte[] pre = sendPrefix.getBytes();
                 ByteArrayOutputStream dataOut = new ByteArrayOutputStream( );
                 dataOut.write(pre);
@@ -406,6 +409,27 @@ public class ChatClient extends JFrame implements ActionListener
         }
     }
 
+    private static void processFileRequest(String msg)
+    {
+        Scanner scLine =  new Scanner(msg).useDelimiter("#");
+        scLine.next(); // MESSAGE or FILE
+        String senderName = scLine.next(); // the person to send to
+        String fileName = scLine.next();// the actual message
+        String fileSize = scLine.next();
+        scLine.close();
+
+        int sure = JOptionPane.showConfirmDialog(null,"Do you want to accept the file: " + fileName + '\n' + "from sender: " + senderName + '\n' + "of size: " + fileSize, "Receive File Request", JOptionPane.YES_NO_OPTION);
+        if(sure == JOptionPane.YES_OPTION)
+        {
+            out.println(ProtocolResponses.ACCEPT_FILE + "#" + senderName);
+        }
+        if(sure == JOptionPane.NO_OPTION)
+        {
+            //do nothing
+        }
+
+    }
+
     private static void processFileFromServer(byte[] message)
     {
       String type= new String(Arrays.copyOfRange(message, 0, 1), StandardCharsets.US_ASCII);
@@ -413,7 +437,7 @@ public class ChatClient extends JFrame implements ActionListener
 
         System.out.println(type);
         System.out.println(client);
-        byte[] fileBytes = Arrays.copyOfRange(message, 72, message.length);
+        //byte[] fileBytes = Arrays.copyOfRange(message, 72, message.length);
 
         JFileChooser filePicker = new JFileChooser();
         int response = filePicker.showSaveDialog(null);
@@ -427,7 +451,7 @@ public class ChatClient extends JFrame implements ActionListener
            try
            {
              OutputStream os = new FileOutputStream(file); // Initialize a pointer in file using OutputStream
-             os.write(fileBytes);  // Starts writing the bytes in it
+            // os.write(fileBytes);  // Starts writing the bytes in it
              os.close();   // Close the file
         }
 

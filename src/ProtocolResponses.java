@@ -11,4 +11,5 @@ public class ProtocolResponses
     public static final String NO_NAME_ENTERED = "Error registering name: No name entered. Please try again.";
     public static final String NOTIFY_LOGOUT = "You have been logged out";
     public static final String ILLEGAL_CHARACTERS = "Your name contains illegal characters, Please enter Alphanumeric characters only";
+    public static final String ACCEPT_FILE = "A";
 }
