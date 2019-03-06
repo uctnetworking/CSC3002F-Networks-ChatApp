@@ -144,14 +144,13 @@ public class ClientHandlerThread extends Thread
         byte[] fileName = new byte[32];
         inStream.read(fileName);
         String fileNameWithStars = new String(fileName);
-
         byte[] fileCapacity = new byte[8];
         inStream.read(fileCapacity);
         String fileBytes = new String(fileCapacity);
 
         int fileSize = Integer.parseInt(fileBytes);
         this.fileWaitingToBeSent = new byte[fileSize];
-        in.nextLine();
+        inStream.read(this.fileWaitingToBeSent);
 
         String recipientNameWithoutStars = removeStarsFromName(recipientNameWithStars);
         String fileNameWithoutStars = removeStarsFromName(fileNameWithStars);
@@ -161,6 +160,7 @@ public class ClientHandlerThread extends Thread
             if(c.getClientName().equalsIgnoreCase(recipientNameWithoutStars))
             {
                 PrintWriter outToRecipient = new PrintWriter(c.getSocket().getOutputStream(), true);
+                System.out.println("Sending...: " + this.clientName + "#" + fileNameWithoutStars + "#" + fileSize);
                 outToRecipient.println(ProtocolRequests.REQUEST_TO_SEND_FILE + "#" + this.clientName + "#" + fileNameWithoutStars + "#" + fileSize);
             }
         }

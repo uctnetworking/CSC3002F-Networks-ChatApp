@@ -86,19 +86,16 @@ public class ChatClient extends JFrame implements ActionListener
             }
             else if(msg.startsWith(ProtocolRequests.FILE))
             {
+                System.out.println("Receiving...");
                 byte[] fileName = new byte[32];
                 socket.getInputStream().read(fileName);
                 String fileNameWithStars = new String(fileName);
-                System.out.println(fileNameWithStars);
-
                 byte[] fileSizeBytes = new byte[8];
                 socket.getInputStream().read(fileSizeBytes);
                 String fileSize = new String(fileSizeBytes);
-                System.out.println(fileSize);
                 byte[] file = new byte[Integer.parseInt(fileSize)];
                 socket.getInputStream().read(fileSizeBytes);
-                //processFileFromServer(fileNameWithStars, file);
-                printByteArray(file);
+                processFileFromServer(fileNameWithStars, file);
             }
         }
     }
@@ -457,7 +454,7 @@ public class ChatClient extends JFrame implements ActionListener
 
     }
 
-    private static void processFileFromServer(String fileName, byte[] old)
+    private static void processFileFromServer(String fileName, byte[] message)
     {
       //String type= new String(Arrays.copyOfRange(message, 0, 1), StandardCharsets.US_ASCII);
      // String client = new String(Arrays.copyOfRange(message, 1, 32), StandardCharsets.US_ASCII);
@@ -465,7 +462,6 @@ public class ChatClient extends JFrame implements ActionListener
     //    System.out.println(type);
     //    System.out.println(client);
         //byte[] fileBytes = Arrays.copyOfRange(message, 72, message.length);
-        byte[]message = {33};
         JFileChooser filePicker = new JFileChooser();
         int response = filePicker.showSaveDialog(null);
          //filePicker.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
